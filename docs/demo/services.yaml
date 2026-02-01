@@ -1,0 +1,11 @@
+version: "1"
+
+services:
+  user-service:
+    path: ./user-service
+
+  order-service:
+    path: ./order-service
+
+  notification-service:
+    path: ./notification-service
