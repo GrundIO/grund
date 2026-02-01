@@ -39,22 +39,6 @@ Grund solves this by:
 3. **Infrastructure provisioning** - Databases, queues, and buckets are created automatically
 4. **Correct startup order** - Dependencies start before dependents
 
-```bash
-$ grund up payment-service
-
-Starting infrastructure...
-  ✓ postgres (localhost:5432)
-  ✓ redis (localhost:6379)
-  ✓ localstack (localhost:4566)
-    → sqs: payment-queue ✓
-
-Starting services...
-  ✓ user-service (localhost:8081)
-  ✓ payment-service (localhost:8080)
-
-Ready!
-```
-
 ## Prerequisites
 
 - **Docker** and **Docker Compose** v2+
