@@ -1,4 +1,6 @@
-# Grund - Local Development Orchestration Tool
+<p align="center">
+  <img src="docs/assets/cover.jpeg" alt="Grund - Local Development Orchestration Tool" width="100%">
+</p>
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
