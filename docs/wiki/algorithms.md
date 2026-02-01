@@ -67,11 +67,26 @@ Output: list of all services that serviceName depends on (directly or indirectly
 **Time Complexity:** O(V + E) where V = vertices (services), E = edges (dependencies)
 
 **Example:**
-```
-Service Graph:
-  order-service → user-service → auth-service
-                → notification-service
 
+```mermaid
+graph LR
+    subgraph "User Request"
+        order["order-service"]
+    end
+
+    subgraph "Dependencies Resolved"
+        order --> user["user-service"]
+        order --> notif["notification-service"]
+        user --> auth["auth-service"]
+    end
+
+    style order fill:#4CAF50,color:#fff
+    style user fill:#2196F3,color:#fff
+    style notif fill:#2196F3,color:#fff
+    style auth fill:#2196F3,color:#fff
+```
+
+```
 GetAllDependencies("order-service"):
   Result: [user-service, auth-service, notification-service]
 ```
@@ -192,35 +207,58 @@ Phase 3: Kahn's Algorithm
 **Time Complexity:** O(V + E)
 
 **Visual Example:**
+
+```mermaid
+graph TD
+    subgraph "Service Dependencies"
+        order["order-service<br/>(in-degree: 2)"]
+        notif["notification-service<br/>(in-degree: 1)"]
+        user["user-service<br/>(in-degree: 0)"]
+
+        order --> user
+        order --> notif
+        notif --> user
+    end
+
+    style user fill:#4CAF50,color:#fff
+    style notif fill:#FFC107,color:#000
+    style order fill:#F44336,color:#fff
 ```
-Service Graph:
-  order-service → user-service
-  order-service → notification-service
-  notification-service → user-service
 
-In-degrees (within this subgraph):
-  user-service: 0          (no dependencies)
-  notification-service: 1  (depends on user-service)
-  order-service: 2         (depends on user-service, notification-service)
+**Kahn's Algorithm Execution:**
 
-Kahn's Algorithm Execution:
-  Queue: [user-service]              Result: []
+```mermaid
+sequenceDiagram
+    participant Q as Queue
+    participant R as Result
 
-  Step 1: Process user-service
-    Queue: []                        Result: [user-service]
-    Decrement dependents: notification-service (1→0), order-service (2→1)
-    Add to queue: notification-service
+    Note over Q,R: Initial: in-degrees = {user:0, notif:1, order:2}
 
-  Step 2: Process notification-service
-    Queue: []                        Result: [user-service, notification-service]
-    Decrement dependents: order-service (1→0)
-    Add to queue: order-service
+    Q->>Q: Add user-service (in-degree=0)
 
-  Step 3: Process order-service
-    Queue: []                        Result: [user-service, notification-service, order-service]
+    rect rgb(200, 230, 200)
+        Note over Q,R: Step 1
+        Q->>R: Process user-service
+        Note over Q: notif: 1→0, order: 2→1
+        Q->>Q: Add notification-service
+    end
 
-Startup Order: user-service → notification-service → order-service
+    rect rgb(255, 243, 200)
+        Note over Q,R: Step 2
+        Q->>R: Process notification-service
+        Note over Q: order: 1→0
+        Q->>Q: Add order-service
+    end
+
+    rect rgb(255, 200, 200)
+        Note over Q,R: Step 3
+        Q->>R: Process order-service
+    end
+
+    Note over R: Final: [user, notification, order]
 ```
+
+**Startup Order:** `user-service` → `notification-service` → `order-service`
 
 ---
 
@@ -450,32 +488,30 @@ Output: (servicesPath, orchestrationRoot, error)
 ```
 
 **Visual Flow:**
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Configuration Resolution                      │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  1. CLI Flag: --config=/path/to/services.yaml                   │
-│     │                                                            │
-│     ▼ (not provided)                                            │
-│  2. Environment: GRUND_CONFIG=/path/to/services.yaml            │
-│     │                                                            │
-│     ▼ (not set)                                                 │
-│  3. Local Search:                                                │
-│     ./services.yaml                                              │
-│     ./grund-services.yaml                                        │
-│     ../services.yaml                                             │
-│     ../../services.yaml                                          │
-│     ... (up to 5 levels)                                         │
-│     │                                                            │
-│     ▼ (not found)                                               │
-│  4. Global Config: ~/.grund/config.yaml                         │
-│     → default_orchestration_repo + /services.yaml               │
-│     │                                                            │
-│     ▼ (not found)                                               │
-│  5. Error: "services file not found"                            │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
+
+```mermaid
+flowchart TD
+    A[Start] --> B{--config flag<br/>provided?}
+    B -->|Yes| C[Use specified path]
+    B -->|No| D{GRUND_CONFIG<br/>env set?}
+    D -->|Yes| E[Use env path]
+    D -->|No| F{Local file exists?<br/>services.yaml<br/>grund-services.yaml}
+    F -->|Yes| G[Use local file]
+    F -->|No| H{~/.grund/config.yaml<br/>has services?}
+    H -->|Yes| I[Use global config]
+    H -->|No| J[❌ Error:<br/>services file not found]
+
+    C --> K[✅ Load services]
+    E --> K
+    G --> K
+    I --> K
+
+    style C fill:#4CAF50,color:#fff
+    style E fill:#4CAF50,color:#fff
+    style G fill:#4CAF50,color:#fff
+    style I fill:#4CAF50,color:#fff
+    style J fill:#F44336,color:#fff
+    style K fill:#2196F3,color:#fff
 ```
 
 ---

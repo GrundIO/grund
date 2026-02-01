@@ -8,6 +8,8 @@ This document describes the architecture of Grund, which follows **SOLID princip
 |----------|-------------|
 | [Architecture](./architecture.md) | This document - system architecture and design |
 | [CLI Commands](./cli-commands.md) | Complete CLI reference with examples |
+| [Cheatsheet](./cheatsheet.md) | Quick reference for all commands |
+| [Placeholders](./placeholders.md) | Environment variable placeholder reference |
 | [Algorithms](./algorithms.md) | Dependency resolution, topological sort, etc. |
 | [Configuration](./configuration.md) | All config files and schemas |
 | [Adding Infrastructure](./adding-new-infrastructure.md) | Guide to extend Grund |
@@ -22,46 +24,42 @@ This document describes the architecture of Grund, which follows **SOLID princip
 
 Grund uses a **layered architecture** with clear separation of concerns:
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                  CLI Layer (internal/cli)                   │
-│  - Cobra commands (up, down, status, logs, etc.)           │
-│  - Flag parsing and user interaction                        │
-│  - Delegates to application layer                           │
-└─────────────────────────────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────────┐
-│            Application Layer (internal/application)         │
-│  - Commands: UpCommandHandler, DownCommandHandler, etc.    │
-│  - Queries: StatusQueryHandler, ConfigQueryHandler         │
-│  - Ports: Interfaces defining contracts                     │
-│  - Wiring: Dependency injection container                   │
-└─────────────────────────────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────────┐
-│              Domain Layer (internal/domain)                 │
-│  - Entities: Service, InfrastructureRequirements           │
-│  - Value Objects: Port, ServiceName, ServiceType           │
-│  - Domain Services: Dependency graph resolution             │
-└─────────────────────────────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────────┐
-│         Infrastructure Layer (internal/infrastructure)      │
-│  - Docker: Orchestrator, Provisioners, HealthChecker       │
-│  - AWS: LocalStack provisioner                              │
-│  - Config: Service repositories                             │
-│  - Generator: Compose file, Environment resolver            │
-└─────────────────────────────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────────┐
-│              Cross-Cutting Concerns                         │
-│  - UI (internal/ui): Logging, colors, spinners, tables     │
-│  - Config (internal/config): Global/local config parsing   │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph CLI["🖥️ CLI Layer (internal/cli)"]
+        cli_desc["Cobra commands: up, down, status, logs<br/>Flag parsing and user interaction<br/>Delegates to application layer"]
+    end
+
+    subgraph APP["⚙️ Application Layer (internal/application)"]
+        app_desc["Commands: UpCommandHandler, DownCommandHandler<br/>Queries: StatusQueryHandler, ConfigQueryHandler<br/>Ports: Interface contracts | Wiring: DI container"]
+    end
+
+    subgraph DOMAIN["🏛️ Domain Layer (internal/domain)"]
+        domain_desc["Entities: Service, InfrastructureRequirements<br/>Value Objects: Port, ServiceName, ServiceType<br/>Domain Services: Dependency graph resolution"]
+    end
+
+    subgraph INFRA["🔧 Infrastructure Layer (internal/infrastructure)"]
+        docker["Docker<br/>Orchestrator, Provisioners"]
+        aws["AWS<br/>LocalStack provisioner"]
+        tunnel["Tunnel<br/>cloudflared/ngrok"]
+        generator["Generator<br/>Compose, Env resolver"]
+    end
+
+    subgraph CROSS["📦 Cross-Cutting Concerns"]
+        ui["UI: Logging, colors, spinners"]
+        config["Config: Global/local parsing"]
+    end
+
+    CLI --> APP
+    APP --> DOMAIN
+    APP --> INFRA
+    INFRA --> CROSS
+
+    style CLI fill:#e1f5fe,stroke:#01579b
+    style APP fill:#fff3e0,stroke:#e65100
+    style DOMAIN fill:#f3e5f5,stroke:#7b1fa2
+    style INFRA fill:#e8f5e9,stroke:#2e7d32
+    style CROSS fill:#fafafa,stroke:#616161
 ```
 
 ## Layer Responsibilities
@@ -568,54 +566,62 @@ internal/
 
 ## Data Flow Example: `grund up user-service`
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│ 1. CLI: Parse args, initialize container                                │
-│    up.go → wiring.Container                                             │
-└────────────────────────────────────┬────────────────────────────────────┘
-                                     │
-                                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│ 2. Application: UpCommandHandler.Handle()                               │
-│    - Load service via ServiceRepository                                 │
-│    - Resolve dependencies via dependency graph                          │
-│    - Aggregate infrastructure requirements                              │
-└────────────────────────────────────┬────────────────────────────────────┘
-                                     │
-                                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│ 3. Tunnel: Start tunnels FIRST (if configured)                          │
-│    - TunnelManager.StartAll() → cloudflared/ngrok                      │
-│    - Captures public URLs (e.g., https://abc.trycloudflare.com)        │
-│    - URLs available for ${tunnel.<name>.url} resolution                 │
-└────────────────────────────────────┬────────────────────────────────────┘
-                                     │
-                                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│ 4. Infrastructure: Generate per-service compose files                   │
-│    ComposeGenerator.GenerateWithTunnels(services, infra, tunnelCtx)    │
-│    - Resolves ${tunnel.localstack.url} to actual public URL            │
-└────────────────────────────────────┬────────────────────────────────────┘
-                                     │
-                                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│ 5. Infrastructure: Start containers                                     │
-│    - DockerOrchestrator.StartInfrastructure() → postgres, redis, etc.  │
-│    - HealthChecker.WaitForHealthy() → wait for ready                   │
-└────────────────────────────────────┬────────────────────────────────────┘
-                                     │
-                                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│ 6. Infrastructure: Provision resources                                  │
-│    - PostgresProvisioner.Provision() → create database                 │
-│    - LocalStackProvisioner.Provision() → create queues/topics          │
-└────────────────────────────────────┬────────────────────────────────────┘
-                                     │
-                                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│ 7. Infrastructure: Start application services                           │
-│    DockerOrchestrator.StartServices(["user-service"])                  │
-└─────────────────────────────────────────────────────────────────────────┘
+```mermaid
+sequenceDiagram
+    autonumber
+    participant User
+    participant CLI as CLI Layer
+    participant Handler as UpCommandHandler
+    participant Repo as ServiceRepository
+    participant Tunnel as TunnelManager
+    participant Gen as ComposeGenerator
+    participant Docker as DockerOrchestrator
+    participant Prov as Provisioner
+
+    User->>CLI: grund up user-service
+    CLI->>Handler: Handle(UpCommand)
+
+    rect rgb(240, 248, 255)
+        Note over Handler,Repo: Load & Resolve
+        Handler->>Repo: FindByName("user-service")
+        Repo-->>Handler: Service + dependencies
+        Handler->>Handler: Aggregate infrastructure requirements
+    end
+
+    rect rgb(255, 248, 240)
+        Note over Handler,Tunnel: Tunnels (if configured)
+        Handler->>Tunnel: StartAll()
+        Tunnel-->>Handler: tunnel URLs (https://...)
+    end
+
+    rect rgb(240, 255, 240)
+        Note over Handler,Gen: Generate Compose
+        Handler->>Gen: GenerateWithTunnels(services, infra, tunnelCtx)
+        Gen-->>Handler: ComposeFileSet
+    end
+
+    rect rgb(248, 240, 255)
+        Note over Handler,Docker: Start Infrastructure
+        Handler->>Docker: StartInfrastructure()
+        Docker-->>Handler: postgres, redis, localstack ready
+        Handler->>Docker: WaitForHealthy()
+    end
+
+    rect rgb(255, 255, 240)
+        Note over Handler,Prov: Provision Resources
+        Handler->>Prov: ProvisionPostgres(config)
+        Handler->>Prov: ProvisionLocalStack(sqs, sns, s3)
+        Prov-->>Handler: databases, queues created
+    end
+
+    rect rgb(240, 255, 248)
+        Note over Handler,Docker: Start Services
+        Handler->>Docker: StartServices(["user-service"])
+        Docker-->>Handler: services running
+    end
+
+    Handler-->>CLI: Success
+    CLI-->>User: ✓ Ready!
 ```
 
 ## Benefits of This Architecture

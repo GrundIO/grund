@@ -2,6 +2,9 @@
 
 This document provides detailed documentation for all Grund CLI commands.
 
+> [!TIP]
+> Enable shell completion for faster command entry. See [Shell Completion](#shell-completion) section below.
+
 ## Global Flags
 
 | Flag | Short | Description |
@@ -42,6 +45,9 @@ grund up [services...] [flags]
 |------|-------------|
 | `--no-deps` | Only start specified services, skip dependencies |
 | `--infra-only` | Only start infrastructure (postgres, redis, etc.), skip application services |
+
+> [!NOTE]
+> Use `--infra-only` when you want to run your service locally (outside Docker) but still need the infrastructure.
 | `--build` | Force rebuild containers |
 | `--local` | Run service locally (not in container) - *planned* |
 
@@ -221,6 +227,9 @@ Stop all services and optionally clean up resources.
 grund reset [flags]
 ```
 
+> [!WARNING]
+> Using `--volumes` will **permanently delete** all database data. This cannot be undone!
+
 **Flags:**
 | Flag | Short | Description |
 |------|-------|-------------|
@@ -238,8 +247,6 @@ grund reset -v
 # Full cleanup: stop, remove volumes and images
 grund reset -v --images
 ```
-
-**Warning:** Using `--volumes` will delete all database data. Use with caution.
 
 ---
 

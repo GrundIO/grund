@@ -82,7 +82,8 @@ grund --version
 
 ### Quick Start (Recommended)
 
-Run the interactive setup wizard:
+> [!TIP]
+> Run `grund init` for an interactive setup wizard that handles all configuration automatically.
 
 ```bash
 grund init
@@ -189,7 +190,11 @@ grund up user-service
    grund service add queue events-queue
    ```
 
-5. **Register in `services.yaml`:**
+5. **Register in `~/.grund/config.yaml`:**
+
+   > [!IMPORTANT]
+   > Services must be registered before running `grund up`. The path must point to a directory containing `grund.yaml`.
+
    ```yaml
    services:
      my-service:
@@ -252,6 +257,9 @@ grund service add bucket uploads
 ```bash
 grund service add tunnel my-tunnel
 ```
+
+> [!NOTE]
+> Tunnels start **before** services, so `${tunnel.localstack.url}` is always available in your `env_refs`.
 
 Expose local endpoints to the internet. Useful for:
 - Making LocalStack S3 presigned URLs accessible to cloud LLMs
@@ -321,6 +329,9 @@ grund restart user-service --build  # Rebuild before restart
 
 ### `grund reset`
 Stop services and clean up resources.
+
+> [!WARNING]
+> Using `grund reset -v` will **permanently delete** all database data. Make sure to backup important data first.
 
 ```bash
 grund reset              # Stop all services
@@ -406,6 +417,9 @@ grund service validate
 
 ### Service Configuration (`grund.yaml`)
 
+<details>
+<summary>📋 Click to expand full grund.yaml example</summary>
+
 ```yaml
 version: "1"
 
@@ -463,6 +477,8 @@ env_refs:                       # Dynamic environment variables
   AWS_ENDPOINT: "http://${localstack.host}:${localstack.port}"
 ```
 
+</details>
+
 ### Services Registry (`services.yaml`)
 
 ```yaml
@@ -499,7 +515,10 @@ localstack:
 
 ### Environment Variable Interpolation
 
-Use these placeholders in `env_refs`:
+Use `${placeholder}` syntax in `env_refs` to reference infrastructure and services.
+
+<details>
+<summary>📋 Click to expand full placeholder reference</summary>
 
 | Placeholder | Description |
 |-------------|-------------|
@@ -526,6 +545,8 @@ Use these placeholders in `env_refs`:
 | `${self.postgres.database}` | This service's database name |
 | `${tunnel.<name>.url}` | Public tunnel URL (https://...) |
 | `${tunnel.<name>.host}` | Public tunnel hostname |
+
+</details>
 
 ## Shell Completion
 
@@ -557,7 +578,58 @@ grund --<TAB>       → --config  --verbose  --help
 
 ## Troubleshooting
 
+Use this decision tree to diagnose common issues:
+
+```mermaid
+flowchart TD
+    A[Issue?] --> B{Services not<br/>starting?}
+    B -->|Yes| C{Config found?}
+    C -->|No| D["Run: grund init"]
+    C -->|Yes| E{Docker running?}
+    E -->|No| F[Start Docker Desktop]
+    E -->|Yes| G["Run: grund -v up service"]
+
+    B -->|No| H{Container<br/>unhealthy?}
+    H -->|Yes| I["Run: grund logs service"]
+
+    H -->|No| J{Port in use?}
+    J -->|Yes| K["Run: grund reset"]
+
+    J -->|No| L{LocalStack<br/>issues?}
+    L -->|Yes| M["Run: grund reset -v"]
+
+    L -->|No| N["Run: grund status"]
+
+    style D fill:#4CAF50,color:#fff
+    style F fill:#4CAF50,color:#fff
+    style G fill:#2196F3,color:#fff
+    style I fill:#2196F3,color:#fff
+    style K fill:#FFC107,color:#000
+    style M fill:#FFC107,color:#000
+    style N fill:#9E9E9E,color:#fff
+```
+
+---
+
 ### "services.yaml not found"
+
+Grund searches for configuration in this order:
+
+```mermaid
+flowchart LR
+    A["1️⃣ --config flag"] --> B["2️⃣ GRUND_CONFIG env"]
+    B --> C["3️⃣ Local search<br/>(up to 5 dirs)"]
+    C --> D["4️⃣ ~/.grund/config.yaml"]
+    D --> E["❌ Error"]
+
+    style A fill:#1976D2,color:#fff
+    style B fill:#388E3C,color:#fff
+    style C fill:#F57C00,color:#fff
+    style D fill:#7B1FA2,color:#fff
+    style E fill:#D32F2F,color:#fff
+```
+
+**Fix options:**
 
 Set the `GRUND_CONFIG` environment variable:
 ```bash
@@ -567,6 +639,11 @@ export GRUND_CONFIG=/path/to/services.yaml
 Or use the `--config` flag:
 ```bash
 grund --config=/path/to/services.yaml up my-service
+```
+
+Or run the setup wizard:
+```bash
+grund init
 ```
 
 ### "Container is unhealthy"
