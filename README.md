@@ -143,33 +143,7 @@ grund up user-service
    grund service init
    ```
 
-3. **Or create `grund.yaml` manually:**
-   ```yaml
-   version: "1"
-
-   service:
-     name: my-service
-     type: go  # go, python, or node
-     port: 8080
-     build:
-       dockerfile: Dockerfile
-       context: .
-     health:
-       endpoint: /health
-       interval: 5s
-       timeout: 3s
-       retries: 10
-
-   requires:
-     services: []
-     infrastructure: {}
-
-   env:
-     APP_ENV: development
-     LOG_LEVEL: debug
-
-   env_refs: {}
-   ```
+3. **Or create `grund.yaml` manually** - see [Configuration Reference](#configuration-reference) for full schema.
 
 4. **Add infrastructure as needed:**
    ```bash
@@ -209,50 +183,23 @@ env_refs:
   USER_SERVICE_URL: "http://${user-service.host}:${user-service.port}"
 ```
 
-### Infrastructure Options
+<details>
+<summary><h3>Infrastructure Options</h3></summary>
 
-#### PostgreSQL
-```bash
-grund service add postgres myapp_db
-```
-
-#### MongoDB
-```bash
-grund service add mongodb myapp_db
-```
-
-#### Redis
-```bash
-grund service add redis
-```
-
-#### SQS (via LocalStack)
-```bash
-grund service add queue order-events
-```
-
-#### SNS (via LocalStack)
-```bash
-grund service add topic notifications
-```
-
-#### S3 (via LocalStack)
-```bash
-grund service add bucket uploads
-```
-
-#### Tunnel (cloudflared or ngrok)
-```bash
-grund service add tunnel my-tunnel
-```
+| Type | Command | Notes |
+|------|---------|-------|
+| PostgreSQL | `grund service add postgres myapp_db` | |
+| MongoDB | `grund service add mongodb myapp_db` | |
+| Redis | `grund service add redis` | |
+| SQS | `grund service add queue order-events` | Via LocalStack |
+| SNS | `grund service add topic notifications` | Via LocalStack |
+| S3 | `grund service add bucket uploads` | Via LocalStack |
+| Tunnel | `grund service add tunnel my-tunnel` | cloudflared or ngrok |
 
 > [!NOTE]
 > Tunnels start **before** services, so `${tunnel.localstack.url}` is always available in your `env_refs`.
 
-Expose local endpoints to the internet. Useful for:
-- Making LocalStack S3 presigned URLs accessible to cloud LLMs
-- Testing webhooks from external services
-- Sharing local development servers
+</details>
 
 ## Commands Reference
 
@@ -337,21 +284,6 @@ env_refs:                       # Dynamic environment variables
 ```
 
 </details>
-
-### Services Registry (`services.yaml`)
-
-```yaml
-version: "1"
-
-services:
-  user-service:
-    repo: git@github.com:mycompany/user-service.git
-    path: ~/projects/user-service
-
-  payment-service:
-    repo: git@github.com:mycompany/payment-service.git
-    path: ~/projects/payment-service
-```
 
 ### Global Configuration (`~/.grund/config.yaml`)
 
