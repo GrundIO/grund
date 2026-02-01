@@ -4,23 +4,26 @@
 #
 # Prerequisites:
 #   - Docker running
-#   - Demo services configured
 
-Output ../grund-infra-only.gif
+Output docs/assets/grund-infra-only.gif
 
 Set FontSize 16
 Set Width 1200
-Set Height 600
+Set Height 420
 Set Theme "Dracula"
 Set Padding 20
-Set TypingSpeed 50ms
+Set TypingSpeed 30ms
+Set Shell "bash"
 
-# Hidden setup
+# Setup PATH and environment (hidden)
 Hide
-Type "cd ~/Personal/grund/docs/demo && export GRUND_CONFIG=$(pwd)/services.yaml"
+Type "export PATH=$PATH:$HOME/go/bin"
 Enter
 Sleep 300ms
-Type "docker compose -p grund down 2>/dev/null"
+Type "export GRUND_CONFIG=$HOME/Personal/grund/docs/demo/services.yaml"
+Enter
+Sleep 300ms
+Type "grund down 2>/dev/null"
 Enter
 Sleep 2s
 Type "clear"
@@ -40,9 +43,9 @@ Sleep 300ms
 Enter
 
 # Wait for infrastructure
-Sleep 15s
+Sleep 6s
 
 # Show what's running
 Type "grund status"
 Enter
-Sleep 4s
+Sleep 2s

@@ -4,29 +4,29 @@
 #
 # Prerequisites:
 #   - Docker running
-#   - Demo services set up in docs/demo/
 #   - Run `grund down` before recording for clean state
 
-Output ../grund-up.gif
+Output docs/assets/grund-up.gif
 
 Set FontSize 16
 Set Width 1200
-Set Height 700
+Set Height 490
 Set Theme "Dracula"
 Set Padding 20
-Set TypingSpeed 50ms
+Set TypingSpeed 30ms
+Set Shell "bash"
 
-# Hidden setup
+# Setup PATH and environment (hidden)
 Hide
-Type "cd ~/Personal/grund/docs/demo"
+Type "export PATH=$PATH:$HOME/go/bin"
 Enter
 Sleep 500ms
-Type "export GRUND_CONFIG=$(pwd)/services.yaml"
+Type "export GRUND_CONFIG=$HOME/Personal/grund/docs/demo/services.yaml"
 Enter
 Sleep 500ms
-Type "docker compose -p grund down 2>/dev/null"
+Type "grund down 2>/dev/null"
 Enter
-Sleep 2s
+Sleep 3s
 Type "clear"
 Enter
 Sleep 500ms
@@ -43,8 +43,8 @@ Type "grund up notification-service"
 Sleep 300ms
 Enter
 
-# Wait for completion (adjust based on your machine)
-Sleep 25s
+# Wait for completion
+Sleep 13s
 
 # Show success
 Sleep 2s

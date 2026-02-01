@@ -1,41 +1,53 @@
 # grund-logs.tape
-# Records: Following service logs
+# Records: Viewing service logs
 # Usage: vhs grund-logs.tape
 #
-# Prerequisites:
-#   - Services should be running
-#   - Generate some traffic for interesting logs
+# Note: Starts user-service in hidden setup to have logs to show
 
-Output ../grund-logs.gif
+Output docs/assets/grund-logs.gif
 
 Set FontSize 14
 Set Width 1200
-Set Height 600
+Set Height 420
 Set Theme "Dracula"
 Set Padding 20
-Set TypingSpeed 50ms
+Set TypingSpeed 30ms
+Set Shell "bash"
 
-# Hidden setup
+# Setup PATH, environment, and start service (hidden)
 Hide
+Type "export PATH=$PATH:$HOME/go/bin"
+Enter
+Sleep 200ms
+Type "export GRUND_CONFIG=$HOME/Personal/grund/docs/demo/services.yaml"
+Enter
+Sleep 200ms
+# Start service first so we have logs
+Type "grund up user-service"
+Enter
+Sleep 10s
 Type "clear"
 Enter
-Sleep 500ms
+Sleep 300ms
 Show
 
 # Title
-Type "# Follow logs from user-service"
-Sleep 500ms
-Enter
-Sleep 300ms
-
-# Run logs with follow
-Type "grund logs user-service -f"
+Type "# View logs from user-service"
 Sleep 300ms
 Enter
+Sleep 200ms
 
-# Wait for some logs
-Sleep 8s
+# Run logs
+Type "grund logs user-service"
+Sleep 200ms
+Enter
 
-# Stop following
-Ctrl+C
-Sleep 1s
+# Show logs
+Sleep 3s
+
+# Cleanup (hidden)
+Hide
+Type "grund down"
+Enter
+Sleep 2s
+Show

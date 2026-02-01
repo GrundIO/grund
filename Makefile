@@ -39,19 +39,16 @@ run:
 	go run .
 
 # GIF Recording (requires VHS: brew install charmbracelet/tap/vhs)
+# The script handles all prerequisites automatically:
+#   - Checks Docker is running
+#   - Verifies grund is installed
+#   - Starts/stops demo services as needed
+
 record-gifs:
-	@echo "Recording all GIFs..."
-	@mkdir -p docs/assets
-	@for tape in scripts/recordings/*.tape; do \
-		name=$$(basename "$$tape" .tape); \
-		echo "Recording $$name..."; \
-		vhs "$$tape" -o "docs/assets/$$name.gif"; \
-	done
-	@echo "All GIFs recorded to docs/assets/"
+	@./scripts/record-gifs.sh
 
 record-gif:
 ifndef TAPE
 	$(error TAPE is required. Usage: make record-gif TAPE=grund-up)
 endif
-	@mkdir -p docs/assets
-	vhs scripts/recordings/$(TAPE).tape -o docs/assets/$(TAPE).gif
+	@./scripts/record-gifs.sh $(TAPE)

@@ -1,76 +1,78 @@
 # grund-full-workflow.tape
-# Records: Complete workflow from start to API testing
+# Records: Complete workflow - start services, check status, view logs
 # Usage: vhs grund-full-workflow.tape
 #
 # Prerequisites:
 #   - Docker running
-#   - Demo services configured
-#   - curl installed
 
-Output ../grund-full-workflow.gif
+Output docs/assets/grund-full-workflow.gif
 
 Set FontSize 14
 Set Width 1200
-Set Height 700
+Set Height 490
 Set Theme "Dracula"
 Set Padding 20
-Set TypingSpeed 40ms
+Set TypingSpeed 30ms
+Set Shell "bash"
 
-# Hidden setup
+# Setup PATH and environment (hidden)
 Hide
-Type "cd ~/Personal/grund/docs/demo && export GRUND_CONFIG=$(pwd)/services.yaml"
+Type "export PATH=$PATH:$HOME/go/bin"
 Enter
-Sleep 300ms
-Type "docker compose -p grund down 2>/dev/null"
+Sleep 200ms
+Type "export GRUND_CONFIG=$HOME/Personal/grund/docs/demo/services.yaml"
+Enter
+Sleep 200ms
+Type "grund down 2>/dev/null"
 Enter
 Sleep 2s
 Type "clear"
 Enter
-Sleep 500ms
+Sleep 300ms
 Show
 
 # Step 1: Start services
-Type "# 1. Start the notification service (with all dependencies)"
+Type "# 1. Start notification-service with all dependencies"
 Enter
-Sleep 300ms
+Sleep 200ms
 Type "grund up notification-service"
 Enter
-Sleep 25s
+Sleep 12s
+
+Type "clear"
+Enter
 
 # Step 2: Check status
 Type "# 2. Check service status"
 Enter
-Sleep 300ms
+Sleep 200ms
 Type "grund status"
 Enter
-Sleep 3s
+Sleep 2s
 
-# Step 3: Test APIs
-Type "# 3. Test the APIs"
+Type "clear"
 Enter
-Sleep 300ms
 
-Type "curl -s http://localhost:8080/health | jq ."
+# Step 3: View logs
+Type "# 3. View logs from order-service"
+Enter
+Sleep 200ms
+Type "grund logs order-service --tail 10"
 Enter
 Sleep 2s
 
-Type "curl -s -X POST http://localhost:8080/users -H 'Content-Type: application/json' -d '{\"email\":\"demo@test.com\",\"name\":\"Demo User\"}' | jq ."
+Type "clear"
 Enter
-Sleep 2s
 
-Type "curl -s -X POST http://localhost:8081/orders -H 'Content-Type: application/json' -d '{\"user_id\":1,\"product\":\"Widget\",\"quantity\":3}' | jq ."
+# Step 4: Stop everything
+Type "# 4. Stop all services"
 Enter
-Sleep 2s
+Sleep 200ms
+Type "grund down"
+Enter
+Sleep 4s
 
-# Step 4: View logs
-Type "# 4. Check the logs"
+# Clear for clean loop
+Type "clear"
 Enter
-Sleep 300ms
-Type "grund logs order-service --tail 5"
-Enter
-Sleep 3s
-
-# Done
-Type "# Done! All services running with infrastructure"
-Enter
-Sleep 2s
+Sleep 100ms

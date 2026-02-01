@@ -1,22 +1,25 @@
 # grund-status.tape
 # Records: Viewing service status
 # Usage: vhs grund-status.tape
-#
-# Prerequisites:
-#   - Some services should be running for a good demo
-#   - Run `grund up user-service` before recording
 
-Output ../grund-status.gif
+Output docs/assets/grund-status.gif
 
 Set FontSize 16
 Set Width 1000
-Set Height 500
+Set Height 350
 Set Theme "Dracula"
 Set Padding 20
-Set TypingSpeed 50ms
+Set TypingSpeed 30ms
+Set Shell "bash"
 
-# Hidden setup
+# Setup PATH and environment (hidden)
 Hide
+Type "export PATH=$PATH:$HOME/go/bin"
+Enter
+Sleep 500ms
+Type "export GRUND_CONFIG=$HOME/Personal/grund/docs/demo/services.yaml"
+Enter
+Sleep 500ms
 Type "clear"
 Enter
 Sleep 500ms
@@ -34,4 +37,4 @@ Sleep 300ms
 Enter
 
 # Show the table
-Sleep 4s
+Sleep 2s
