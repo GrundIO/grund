@@ -2,10 +2,10 @@ version: "1"
 
 services:
   user-service:
-    path: ./user-service
+    path: /Users/vivekkundariya/Personal/grund/docs/demo/user-service
 
   order-service:
-    path: ./order-service
+    path: /Users/vivekkundariya/Personal/grund/docs/demo/order-service
 
   notification-service:
-    path: ./notification-service
+    path: /Users/vivekkundariya/Personal/grund/docs/demo/notification-service
