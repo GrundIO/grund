@@ -1,4 +1,4 @@
-.PHONY: build install test test-unit test-integration test-e2e test-race test-coverage clean run fmt lint
+.PHONY: build install test test-unit test-integration test-e2e test-race test-coverage clean run fmt lint record-gifs record-gif
 
 fmt:
 	gofmt -w .
@@ -37,3 +37,21 @@ clean:
 
 run:
 	go run .
+
+# GIF Recording (requires VHS: brew install charmbracelet/tap/vhs)
+record-gifs:
+	@echo "Recording all GIFs..."
+	@mkdir -p docs/assets
+	@for tape in scripts/recordings/*.tape; do \
+		name=$$(basename "$$tape" .tape); \
+		echo "Recording $$name..."; \
+		vhs "$$tape" -o "docs/assets/$$name.gif"; \
+	done
+	@echo "All GIFs recorded to docs/assets/"
+
+record-gif:
+ifndef TAPE
+	$(error TAPE is required. Usage: make record-gif TAPE=grund-up)
+endif
+	@mkdir -p docs/assets
+	vhs scripts/recordings/$(TAPE).tape -o docs/assets/$(TAPE).gif

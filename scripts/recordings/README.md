@@ -28,29 +28,26 @@ docker info
 
 ## Usage
 
-### Record a single GIF
+### Using Make (Recommended)
 
 ```bash
-cd docs/assets/recordings
-vhs grund-up.tape
+# Record all GIFs
+make record-gifs
+
+# Record a single GIF
+make record-gif TAPE=grund-up
 ```
 
-### Record all GIFs
+### Manual Recording
 
 ```bash
-cd docs/assets/recordings
-for tape in *.tape; do
-  echo "Recording $tape..."
-  vhs "$tape"
-done
+cd scripts/recordings
+vhs grund-up.tape -o ../../docs/assets/grund-up.gif
 ```
 
-### Preview before recording
+## Output Location
 
-```bash
-# Reduce sleep times for quick preview
-vhs grund-status.tape --preview
-```
+GIFs are generated in `docs/assets/`.
 
 ## Customization
 
@@ -78,10 +75,6 @@ Set FontSize 16  # Font size
 Set Padding 20   # Padding around terminal
 ```
 
-## Output Location
-
-GIFs are generated in `docs/assets/` (one directory up from recordings).
-
 ## Tips
 
 1. **Clean state**: Run `grund down` before recording `grund-up.tape`
@@ -94,5 +87,5 @@ GIFs are generated in `docs/assets/` (one directory up from recordings).
 When Grund's output changes:
 
 1. Edit the relevant `.tape` file if needed
-2. Re-run `vhs <file>.tape`
-3. Commit the updated GIF
+2. Run `make record-gifs` or `make record-gif TAPE=<name>`
+3. Commit the updated GIFs
