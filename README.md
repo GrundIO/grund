@@ -10,8 +10,6 @@
 
 **Grund** is a CLI tool for local microservice development. One command spins up any service with all its dependencies—other services, databases, queues, and caches—in the correct order.
 
-![Grund Full Workflow](docs/assets/grund-full-workflow.gif)
-
 ## Table of Contents
 
 - [Why Grund?](#why-grund)
@@ -26,20 +24,22 @@
 
 ## Why Grund?
 
-**The Problem:** You want to run `payment-service` locally. But it needs `user-service`, which needs `auth-service`. All three need PostgreSQL. Payment also needs Redis and SQS. You spend 30 minutes writing docker-compose files, setting up LocalStack, and figuring out the right startup order.
+**The Problem:** You want to run `notification-service` locally. But it needs `order-service`, which needs `user-service`. All three need PostgreSQL. Notification also needs Redis and SQS. You spend 30 minutes writing docker-compose files, setting up LocalStack, and figuring out the right startup order.
 
 **The Solution:** With Grund, each service declares its own dependencies. Run one command:
 
 ```bash
-grund up payment-service
+grund up notification-service
 ```
 
 Grund automatically:
-- Resolves the full dependency tree (`payment` → `user` → `auth`)
+- Resolves the full dependency tree (`notification` → `order` → `user`)
 - Starts PostgreSQL, Redis, and LocalStack
 - Creates the SQS queues and databases
 - Boots services in the correct order
 - Injects connection URLs into each service
+
+![Grund Full Workflow](docs/assets/grund-full-workflow.gif)
 
 ## Prerequisites
 
