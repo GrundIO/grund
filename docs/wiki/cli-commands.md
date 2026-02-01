@@ -320,30 +320,6 @@ grund config show user-service
 
 ---
 
-### `grund config init`
-
-Initialize global Grund configuration.
-
-```bash
-grund config init
-```
-
-**What it does:**
-Creates `~/.grund/config.yaml` with default settings.
-
-**Global config options (all optional with defaults):**
-- `docker.compose_command`: Docker compose command (default: `docker compose`)
-- `localstack.endpoint`: LocalStack endpoint (default: `http://localhost:4566`)
-- `localstack.region`: AWS region for LocalStack (default: `us-east-1`)
-
-**Examples:**
-```bash
-# One-time setup for a new machine
-grund config init
-```
-
----
-
 ### `grund service init`
 
 Initialize Grund configuration for a new service.

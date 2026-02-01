@@ -100,17 +100,11 @@ This walks you through:
 
 ### Manual Setup
 
-#### Step 1: Initialize Global Configuration
+If you prefer to set up Grund manually instead of using the interactive wizard:
 
-```bash
-grund config init
-```
+#### Step 1: Create Global Configuration
 
-This creates `~/.grund/config.yaml` with default settings.
-
-#### Step 2: Create Services Registry
-
-Create a `services.yaml` file (or use `grund init` to auto-generate):
+Create `~/.grund/config.yaml` with your services:
 
 ```yaml
 version: "1"
@@ -125,7 +119,7 @@ services:
     path: ~/projects/payment-service
 ```
 
-#### Step 3: Initialize Services
+#### Step 2: Initialize Each Service
 
 In each service repository, create a `grund.yaml`:
 
@@ -141,7 +135,7 @@ The interactive wizard will guide you through:
 
 ![Grund Service Init](docs/assets/grund-service-init.gif)
 
-#### Step 4: Start Services
+#### Step 3: Start Services
 
 ```bash
 grund up user-service

@@ -5,24 +5,22 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/vivekkundariya/grund/internal/config"
+	"github.com/vivekkundariya/grund/internal/ui"
 )
 
 var initCmd = &cobra.Command{
-	Use:   "init",
-	Short: "Initialize global Grund configuration",
-	Long: `Initialize the global Grund configuration at ~/.grund/config.yaml.
+	Use:        "init",
+	Short:      "[DEPRECATED] Use 'grund init' instead",
+	Long:       `DEPRECATED: This command is deprecated and will be removed in a future version.
 
-This is a one-time setup for your machine. It creates a default configuration
-file that you can customize with your preferred paths and settings.
+Use 'grund init' instead, which provides a complete interactive setup including:
+  - Global configuration
+  - Services registration
+  - AI assistant skills installation
 
-For initializing a service with grund.yaml, use 'grund service init' instead.
-
-NOTE: For first-time setup, consider using 'grund init' instead, which also
-sets up AI assistant skills for Claude Code and Cursor.
-
-Example:
-  grund config init`,
-	RunE: runConfigInit,
+For manual setup, create ~/.grund/config.yaml directly.`,
+	Deprecated: "use 'grund init' for interactive setup or manually create ~/.grund/config.yaml",
+	RunE:       runConfigInit,
 }
 
 func init() {
@@ -30,6 +28,9 @@ func init() {
 }
 
 func runConfigInit(cmd *cobra.Command, args []string) error {
+	ui.Warnf("'grund config init' is deprecated. Use 'grund init' instead.")
+	fmt.Println()
+
 	if err := config.InitGlobalConfig(); err != nil {
 		return fmt.Errorf("failed to initialize config: %w", err)
 	}
