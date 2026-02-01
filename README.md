@@ -8,6 +8,8 @@
 
 **Grund** is a CLI tool that enables developers to selectively spin up microservices and their dependencies with a single command. Declare dependencies in your service repos, and Grund resolves the full dependency tree, provisions infrastructure (databases, queues, caches), and starts everything in the correct order.
 
+![Grund Full Workflow](docs/assets/grund-full-workflow.gif)
+
 ## Table of Contents
 
 - [Why Grund?](#why-grund)
@@ -89,6 +91,8 @@ grund --version
 grund init
 ```
 
+![Grund Init](docs/assets/grund-init.gif)
+
 This walks you through:
 1. **Global config** - Creates `~/.grund/config.yaml`
 2. **Services setup** - Scans your projects folder and registers services
@@ -135,11 +139,15 @@ The interactive wizard will guide you through:
 - Infrastructure requirements (PostgreSQL, Redis, etc.)
 - Service dependencies
 
+![Grund Service Init](docs/assets/grund-service-init.gif)
+
 #### Step 4: Start Services
 
 ```bash
 grund up user-service
 ```
+
+![Grund Up](docs/assets/grund-up.gif)
 
 ## Integration Guide
 

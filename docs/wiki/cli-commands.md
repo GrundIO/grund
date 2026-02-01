@@ -33,6 +33,8 @@ Grund automatically finds configuration in this priority order:
 
 Start services and their dependencies.
 
+![Grund Up](../assets/grund-up.gif)
+
 ```bash
 grund up [services...] [flags]
 ```
@@ -123,6 +125,8 @@ grund down
 
 Show the status of all services and infrastructure.
 
+![Grund Status](../assets/grund-status.gif)
+
 ```bash
 grund status
 ```
@@ -156,6 +160,8 @@ grund status
 ### `grund logs`
 
 View logs from services.
+
+![Grund Logs](../assets/grund-logs.gif)
 
 ```bash
 grund logs [services...] [flags]
@@ -254,6 +260,8 @@ grund reset -v --images
 
 Interactive setup wizard for first-time users.
 
+![Grund Init](../assets/grund-init.gif)
+
 ```bash
 grund init
 ```
@@ -276,6 +284,8 @@ grund init
 ### `grund config show`
 
 Show Grund configuration and service details.
+
+![Grund Config Show](../assets/grund-config-show.gif)
 
 ```bash
 grund config show [service]
@@ -338,6 +348,8 @@ grund config init
 
 Initialize Grund configuration for a new service.
 
+![Grund Service Init](../assets/grund-service-init.gif)
+
 ```bash
 grund service init
 ```
@@ -363,6 +375,8 @@ grund service init
 ### `grund service add`
 
 Add infrastructure to an existing service.
+
+![Grund Service Add](../assets/grund-service-add.gif)
 
 ```bash
 grund service add <type> [name]
