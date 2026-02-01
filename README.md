@@ -8,7 +8,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/vivekkundariya/grund?style=for-the-badge&logo=github)](https://github.com/vivekkundariya/grund/releases)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/vivekkundariya)
 
-**Grund** is a CLI tool that enables developers to selectively spin up microservices and their dependencies with a single command. Declare dependencies in your service repos, and Grund resolves the full dependency tree, provisions infrastructure (databases, queues, caches), and starts everything in the correct order.
+**Grund** is a CLI tool for local microservice development. One command spins up any service with all its dependencies—other services, databases, queues, and caches—in the correct order.
 
 ![Grund Full Workflow](docs/assets/grund-full-workflow.gif)
 
@@ -26,18 +26,20 @@
 
 ## Why Grund?
 
-In a microservices architecture, running a single service locally often requires:
-- Multiple dependent services
-- Databases (PostgreSQL, MongoDB)
-- Message queues (SQS, SNS)
-- Object storage (S3)
-- Cache (Redis)
+**The Problem:** You want to run `payment-service` locally. But it needs `user-service`, which needs `auth-service`. All three need PostgreSQL. Payment also needs Redis and SQS. You spend 30 minutes writing docker-compose files, setting up LocalStack, and figuring out the right startup order.
 
-Grund solves this by:
-1. **Declarative dependencies** - Each service declares what it needs in a `grund.yaml`
-2. **Automatic resolution** - Grund builds the full dependency tree
-3. **Infrastructure provisioning** - Databases, queues, and buckets are created automatically
-4. **Correct startup order** - Dependencies start before dependents
+**The Solution:** With Grund, each service declares its own dependencies. Run one command:
+
+```bash
+grund up payment-service
+```
+
+Grund automatically:
+- Resolves the full dependency tree (`payment` → `user` → `auth`)
+- Starts PostgreSQL, Redis, and LocalStack
+- Creates the SQS queues and databases
+- Boots services in the correct order
+- Injects connection URLs into each service
 
 ## Prerequisites
 
