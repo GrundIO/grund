@@ -276,150 +276,21 @@ Expose local endpoints to the internet. Useful for:
 
 ## Commands Reference
 
-### `grund up`
-Start services and their dependencies.
+| Command | Description |
+|---------|-------------|
+| `grund up <service...>` | Start services and their dependencies |
+| `grund down` | Stop all running services |
+| `grund status` | Show running services and their status |
+| `grund logs [service...]` | View service logs |
+| `grund restart <service>` | Restart a specific service |
+| `grund reset [-v]` | Stop services and optionally clean up volumes |
+| `grund init` | Interactive setup wizard |
+| `grund config show [service]` | Show configuration and settings |
+| `grund service init` | Initialize `grund.yaml` in current directory |
+| `grund service add <type>` | Add infrastructure to existing service |
 
-```bash
-grund up <service...>           # Start specific services
-grund up user-service           # Start one service
-grund up user-service payment   # Start multiple services
-grund up user-service --no-deps # Start without dependencies
-grund up user-service --build   # Force rebuild containers
-grund up user-service --infra-only # Only start infrastructure
-```
-
-### `grund down`
-Stop all running services.
-
-```bash
-grund down
-```
-
-### `grund status`
-Show running services and their status.
-
-```bash
-grund status
-```
-
-Output:
-```
-╭──────────────────┬─────────────╮
-│ SERVICE          │ STATUS      │
-├──────────────────┼─────────────┤
-│ postgres         │ ● running   │
-│ redis            │ ● running   │
-│ user-service     │ ● running   │
-│ payment-service  │ ○ not running│
-╰──────────────────┴─────────────╯
-```
-
-### `grund logs`
-View service logs.
-
-```bash
-grund logs                           # All services
-grund logs user-service              # Specific service
-grund logs user-service order-service  # Multiple services
-grund logs -f                        # Follow mode (like tail -f)
-grund logs --tail 50                 # Last 50 lines
-grund logs user-service -f           # Follow specific service
-```
-
-### `grund restart`
-Restart specific services.
-
-```bash
-grund restart user-service
-grund restart user-service payment-service
-grund restart user-service --build  # Rebuild before restart
-```
-
-### `grund reset`
-Stop services and clean up resources.
-
-> [!WARNING]
-> Using `grund reset -v` will **permanently delete** all database data. Make sure to backup important data first.
-
-```bash
-grund reset              # Stop all services
-grund reset -v           # Stop and remove volumes (database data)
-grund reset -v --images  # Full cleanup (volumes + images)
-```
-
-### `grund init`
-Interactive setup wizard for first-time users.
-
-```bash
-grund init
-```
-
-Walks through:
-1. Global config initialization
-2. Projects folder scanning and service registration
-3. AI assistant skills installation (Claude Code / Cursor)
-
-### `grund config show`
-Show configuration and settings.
-
-```bash
-grund config show                # Show global settings and registered services
-grund config show user-service   # Show resolved config for a service
-```
-
-Output for service:
-```
-  Service: user-service
-  Type:    go
-  Port:    8080
-
-  Dependencies: payment-service
-  Infrastructure: postgres, redis
-
-╭─────────────────────┬──────────────────────────────────────╮
-│ Environment Variable│ Value                                │
-├─────────────────────┼──────────────────────────────────────┤
-│ APP_ENV             │ development                          │
-│ DATABASE_URL        │ postgres://postgres:postgres@...     │
-│ REDIS_URL           │ redis://localhost:6379               │
-╰─────────────────────┴──────────────────────────────────────╯
-```
-
-### `grund config init`
-Initialize global configuration at `~/.grund/config.yaml`.
-
-```bash
-grund config init
-```
-
-### `grund service init`
-Initialize `grund.yaml` in current directory.
-
-```bash
-cd ~/projects/my-service
-grund service init
-```
-
-### `grund service add`
-Add resources to existing `grund.yaml`.
-
-```bash
-grund service add postgres <database>    # Add PostgreSQL
-grund service add mongodb <database>     # Add MongoDB
-grund service add redis                  # Add Redis
-grund service add queue <name>           # Add SQS queue
-grund service add topic <name>           # Add SNS topic
-grund service add bucket <name>          # Add S3 bucket
-grund service add tunnel <name>          # Add tunnel (cloudflared/ngrok)
-grund service add dependency <service>   # Add service dependency
-```
-
-### `grund service validate`
-Validate `grund.yaml` configuration.
-
-```bash
-grund service validate
-```
+> [!TIP]
+> For detailed command documentation with examples and flags, see the [CLI Commands Reference](docs/wiki/cli-commands.md).
 
 ## Configuration Reference
 
