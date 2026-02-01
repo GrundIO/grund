@@ -1,0 +1,29 @@
+version: "1"
+
+service:
+  name: user-service
+  type: go
+  port: 8080
+  build:
+    dockerfile: Dockerfile
+    context: .
+  health:
+    endpoint: /health
+    interval: 5s
+    timeout: 3s
+    retries: 10
+
+requires:
+  services: []
+  infrastructure:
+    postgres:
+      database: users_db
+    redis: true
+
+env:
+  APP_ENV: development
+  LOG_LEVEL: debug
+
+env_refs:
+  DATABASE_URL: "postgres://postgres:postgres@${postgres.host}:${postgres.port}/${self.postgres.database}?sslmode=disable"
+  REDIS_URL: "redis://${redis.host}:${redis.port}"

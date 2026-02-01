@@ -1,12 +1,14 @@
-# Grund - Local Development Orchestration Tool
+<p align="center">
+  <img src="docs/assets/cover.jpeg" alt="Grund - Local Development Orchestration Tool" width="100%">
+</p>
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
-[![Go Report Card](https://img.shields.io/badge/Go%20Report-A-success?style=for-the-badge&logo=go)](https://goreportcard.com/report/github.com/vivekkundariya/grund)
-[![GitHub Release](https://img.shields.io/github/v/release/vivekkundariya/grund?style=for-the-badge&logo=github)](https://github.com/vivekkundariya/grund/releases)
+[![Go Report Card](https://img.shields.io/badge/Go%20Report-A-success?style=for-the-badge&logo=go)](https://goreportcard.com/report/github.com/GrundHQ/grund)
+[![GitHub Release](https://img.shields.io/github/v/release/GrundHQ/grund?style=for-the-badge&logo=github)](https://github.com/GrundHQ/grund/releases)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/vivekkundariya)
 
-**Grund** is a CLI tool that enables developers to selectively spin up microservices and their dependencies with a single command. Declare dependencies in your service repos, and Grund resolves the full dependency tree, provisions infrastructure (databases, queues, caches), and starts everything in the correct order.
+**Grund** is a CLI tool for local microservice development. One command spins up any service with all its dependencies—other services, databases, queues, and caches—in the correct order.
 
 ## Table of Contents
 
@@ -22,34 +24,22 @@
 
 ## Why Grund?
 
-In a microservices architecture, running a single service locally often requires:
-- Multiple dependent services
-- Databases (PostgreSQL, MongoDB)
-- Message queues (SQS, SNS)
-- Object storage (S3)
-- Cache (Redis)
+**The Problem:** You want to run `notification-service` locally. But it needs `order-service`, which needs `user-service`. All three need PostgreSQL. Notification also needs Redis and SQS. You spend 30 minutes writing docker-compose files, setting up LocalStack, and figuring out the right startup order.
 
-Grund solves this by:
-1. **Declarative dependencies** - Each service declares what it needs in a `grund.yaml`
-2. **Automatic resolution** - Grund builds the full dependency tree
-3. **Infrastructure provisioning** - Databases, queues, and buckets are created automatically
-4. **Correct startup order** - Dependencies start before dependents
+**The Solution:** With Grund, each service declares its own dependencies. Run one command:
 
 ```bash
-$ grund up payment-service
-
-Starting infrastructure...
-  ✓ postgres (localhost:5432)
-  ✓ redis (localhost:6379)
-  ✓ localstack (localhost:4566)
-    → sqs: payment-queue ✓
-
-Starting services...
-  ✓ user-service (localhost:8081)
-  ✓ payment-service (localhost:8080)
-
-Ready!
+grund up notification-service
 ```
+
+Grund automatically:
+- Resolves the full dependency tree (`notification` → `order` → `user`)
+- Starts PostgreSQL, Redis, and LocalStack
+- Creates the SQS queues and databases
+- Boots services in the correct order
+- Injects connection URLs into each service
+
+![Grund Full Workflow](docs/assets/grund-full-workflow.gif)
 
 ## Prerequisites
 
@@ -61,13 +51,13 @@ Ready!
 ### Using Go Install
 
 ```bash
-go install github.com/vivekkundariya/grund@latest
+go install github.com/GrundHQ/grund@latest
 ```
 
 ### From Source
 
 ```bash
-git clone https://github.com/vivekkundariya/grund.git
+git clone https://github.com/GrundHQ/grund.git
 cd grund
 make install
 ```
@@ -82,11 +72,14 @@ grund --version
 
 ### Quick Start (Recommended)
 
-Run the interactive setup wizard:
+> [!TIP]
+> Run `grund init` for an interactive setup wizard that handles all configuration automatically.
 
 ```bash
 grund init
 ```
+
+![Grund Init](docs/assets/grund-init.gif)
 
 This walks you through:
 1. **Global config** - Creates `~/.grund/config.yaml`
@@ -95,17 +88,11 @@ This walks you through:
 
 ### Manual Setup
 
-#### Step 1: Initialize Global Configuration
+If you prefer to set up Grund manually instead of using the interactive wizard:
 
-```bash
-grund config init
-```
+#### Step 1: Create Global Configuration
 
-This creates `~/.grund/config.yaml` with default settings.
-
-#### Step 2: Create Services Registry
-
-Create a `services.yaml` file (or use `grund init` to auto-generate):
+Create `~/.grund/config.yaml` with your services:
 
 ```yaml
 version: "1"
@@ -120,7 +107,7 @@ services:
     path: ~/projects/payment-service
 ```
 
-#### Step 3: Initialize Services
+#### Step 2: Initialize Each Service
 
 In each service repository, create a `grund.yaml`:
 
@@ -134,11 +121,15 @@ The interactive wizard will guide you through:
 - Infrastructure requirements (PostgreSQL, Redis, etc.)
 - Service dependencies
 
-#### Step 4: Start Services
+![Grund Service Init](docs/assets/grund-service-init.gif)
+
+#### Step 3: Start Services
 
 ```bash
 grund up user-service
 ```
+
+![Grund Up](docs/assets/grund-up.gif)
 
 ## Integration Guide
 
@@ -154,33 +145,7 @@ grund up user-service
    grund service init
    ```
 
-3. **Or create `grund.yaml` manually:**
-   ```yaml
-   version: "1"
-
-   service:
-     name: my-service
-     type: go  # go, python, or node
-     port: 8080
-     build:
-       dockerfile: Dockerfile
-       context: .
-     health:
-       endpoint: /health
-       interval: 5s
-       timeout: 3s
-       retries: 10
-
-   requires:
-     services: []
-     infrastructure: {}
-
-   env:
-     APP_ENV: development
-     LOG_LEVEL: debug
-
-   env_refs: {}
-   ```
+3. **Or create `grund.yaml` manually** - see [Configuration Reference](#configuration-reference) for full schema.
 
 4. **Add infrastructure as needed:**
    ```bash
@@ -189,7 +154,11 @@ grund up user-service
    grund service add queue events-queue
    ```
 
-5. **Register in `services.yaml`:**
+5. **Register in `~/.grund/config.yaml`:**
+
+   > [!IMPORTANT]
+   > Services must be registered before running `grund up`. The path must point to a directory containing `grund.yaml`.
+
    ```yaml
    services:
      my-service:
@@ -216,195 +185,48 @@ env_refs:
   USER_SERVICE_URL: "http://${user-service.host}:${user-service.port}"
 ```
 
-### Infrastructure Options
+<details>
+<summary><h3>Infrastructure Options</h3></summary>
 
-#### PostgreSQL
-```bash
-grund service add postgres myapp_db
-```
+| Type | Command | Notes |
+|------|---------|-------|
+| PostgreSQL | `grund service add postgres myapp_db` | |
+| MongoDB | `grund service add mongodb myapp_db` | |
+| Redis | `grund service add redis` | |
+| SQS | `grund service add queue order-events` | Via LocalStack |
+| SNS | `grund service add topic notifications` | Via LocalStack |
+| S3 | `grund service add bucket uploads` | Via LocalStack |
+| Tunnel | `grund service add tunnel my-tunnel` | cloudflared or ngrok |
 
-#### MongoDB
-```bash
-grund service add mongodb myapp_db
-```
+> [!NOTE]
+> Tunnels start **before** services, so `${tunnel.localstack.url}` is always available in your `env_refs`.
 
-#### Redis
-```bash
-grund service add redis
-```
-
-#### SQS (via LocalStack)
-```bash
-grund service add queue order-events
-```
-
-#### SNS (via LocalStack)
-```bash
-grund service add topic notifications
-```
-
-#### S3 (via LocalStack)
-```bash
-grund service add bucket uploads
-```
-
-#### Tunnel (cloudflared or ngrok)
-```bash
-grund service add tunnel my-tunnel
-```
-
-Expose local endpoints to the internet. Useful for:
-- Making LocalStack S3 presigned URLs accessible to cloud LLMs
-- Testing webhooks from external services
-- Sharing local development servers
+</details>
 
 ## Commands Reference
 
-### `grund up`
-Start services and their dependencies.
+| Command | Description |
+|---------|-------------|
+| `grund up <service...>` | Start services and their dependencies |
+| `grund down` | Stop all running services |
+| `grund status` | Show running services and their status |
+| `grund logs [service...]` | View service logs |
+| `grund restart <service>` | Restart a specific service |
+| `grund reset [-v]` | Stop services and optionally clean up volumes |
+| `grund init` | Interactive setup wizard |
+| `grund config show [service]` | Show configuration and settings |
+| `grund service init` | Initialize `grund.yaml` in current directory |
+| `grund service add <type>` | Add infrastructure to existing service |
 
-```bash
-grund up <service...>           # Start specific services
-grund up user-service           # Start one service
-grund up user-service payment   # Start multiple services
-grund up user-service --no-deps # Start without dependencies
-grund up user-service --build   # Force rebuild containers
-grund up user-service --infra-only # Only start infrastructure
-```
-
-### `grund down`
-Stop all running services.
-
-```bash
-grund down
-```
-
-### `grund status`
-Show running services and their status.
-
-```bash
-grund status
-```
-
-Output:
-```
-╭──────────────────┬─────────────╮
-│ SERVICE          │ STATUS      │
-├──────────────────┼─────────────┤
-│ postgres         │ ● running   │
-│ redis            │ ● running   │
-│ user-service     │ ● running   │
-│ payment-service  │ ○ not running│
-╰──────────────────┴─────────────╯
-```
-
-### `grund logs`
-View service logs.
-
-```bash
-grund logs                           # All services
-grund logs user-service              # Specific service
-grund logs user-service order-service  # Multiple services
-grund logs -f                        # Follow mode (like tail -f)
-grund logs --tail 50                 # Last 50 lines
-grund logs user-service -f           # Follow specific service
-```
-
-### `grund restart`
-Restart specific services.
-
-```bash
-grund restart user-service
-grund restart user-service payment-service
-grund restart user-service --build  # Rebuild before restart
-```
-
-### `grund reset`
-Stop services and clean up resources.
-
-```bash
-grund reset              # Stop all services
-grund reset -v           # Stop and remove volumes (database data)
-grund reset -v --images  # Full cleanup (volumes + images)
-```
-
-### `grund init`
-Interactive setup wizard for first-time users.
-
-```bash
-grund init
-```
-
-Walks through:
-1. Global config initialization
-2. Projects folder scanning and service registration
-3. AI assistant skills installation (Claude Code / Cursor)
-
-### `grund config show`
-Show configuration and settings.
-
-```bash
-grund config show                # Show global settings and registered services
-grund config show user-service   # Show resolved config for a service
-```
-
-Output for service:
-```
-  Service: user-service
-  Type:    go
-  Port:    8080
-
-  Dependencies: payment-service
-  Infrastructure: postgres, redis
-
-╭─────────────────────┬──────────────────────────────────────╮
-│ Environment Variable│ Value                                │
-├─────────────────────┼──────────────────────────────────────┤
-│ APP_ENV             │ development                          │
-│ DATABASE_URL        │ postgres://postgres:postgres@...     │
-│ REDIS_URL           │ redis://localhost:6379               │
-╰─────────────────────┴──────────────────────────────────────╯
-```
-
-### `grund config init`
-Initialize global configuration at `~/.grund/config.yaml`.
-
-```bash
-grund config init
-```
-
-### `grund service init`
-Initialize `grund.yaml` in current directory.
-
-```bash
-cd ~/projects/my-service
-grund service init
-```
-
-### `grund service add`
-Add resources to existing `grund.yaml`.
-
-```bash
-grund service add postgres <database>    # Add PostgreSQL
-grund service add mongodb <database>     # Add MongoDB
-grund service add redis                  # Add Redis
-grund service add queue <name>           # Add SQS queue
-grund service add topic <name>           # Add SNS topic
-grund service add bucket <name>          # Add S3 bucket
-grund service add tunnel <name>          # Add tunnel (cloudflared/ngrok)
-grund service add dependency <service>   # Add service dependency
-```
-
-### `grund service validate`
-Validate `grund.yaml` configuration.
-
-```bash
-grund service validate
-```
+> [!TIP]
+> For detailed command documentation with examples and flags, see the [CLI Commands Reference](docs/wiki/cli-commands.md).
 
 ## Configuration Reference
 
 ### Service Configuration (`grund.yaml`)
+
+<details>
+<summary>📋 Click to expand full grund.yaml example</summary>
 
 ```yaml
 version: "1"
@@ -463,20 +285,7 @@ env_refs:                       # Dynamic environment variables
   AWS_ENDPOINT: "http://${localstack.host}:${localstack.port}"
 ```
 
-### Services Registry (`services.yaml`)
-
-```yaml
-version: "1"
-
-services:
-  user-service:
-    repo: git@github.com:mycompany/user-service.git
-    path: ~/projects/user-service
-
-  payment-service:
-    repo: git@github.com:mycompany/payment-service.git
-    path: ~/projects/payment-service
-```
+</details>
 
 ### Global Configuration (`~/.grund/config.yaml`)
 
@@ -499,7 +308,10 @@ localstack:
 
 ### Environment Variable Interpolation
 
-Use these placeholders in `env_refs`:
+Use `${placeholder}` syntax in `env_refs` to reference infrastructure and services.
+
+<details>
+<summary>📋 Click to expand full placeholder reference</summary>
 
 | Placeholder | Description |
 |-------------|-------------|
@@ -526,6 +338,8 @@ Use these placeholders in `env_refs`:
 | `${self.postgres.database}` | This service's database name |
 | `${tunnel.<name>.url}` | Public tunnel URL (https://...) |
 | `${tunnel.<name>.host}` | Public tunnel hostname |
+
+</details>
 
 ## Shell Completion
 
@@ -557,7 +371,58 @@ grund --<TAB>       → --config  --verbose  --help
 
 ## Troubleshooting
 
+Use this decision tree to diagnose common issues:
+
+```mermaid
+flowchart TD
+    A[Issue?] --> B{Services not<br/>starting?}
+    B -->|Yes| C{Config found?}
+    C -->|No| D["Run: grund init"]
+    C -->|Yes| E{Docker running?}
+    E -->|No| F[Start Docker Desktop]
+    E -->|Yes| G["Run: grund -v up service"]
+
+    B -->|No| H{Container<br/>unhealthy?}
+    H -->|Yes| I["Run: grund logs service"]
+
+    H -->|No| J{Port in use?}
+    J -->|Yes| K["Run: grund reset"]
+
+    J -->|No| L{LocalStack<br/>issues?}
+    L -->|Yes| M["Run: grund reset -v"]
+
+    L -->|No| N["Run: grund status"]
+
+    style D fill:#4CAF50,color:#fff
+    style F fill:#4CAF50,color:#fff
+    style G fill:#2196F3,color:#fff
+    style I fill:#2196F3,color:#fff
+    style K fill:#FFC107,color:#000
+    style M fill:#FFC107,color:#000
+    style N fill:#9E9E9E,color:#fff
+```
+
+---
+
 ### "services.yaml not found"
+
+Grund searches for configuration in this order:
+
+```mermaid
+flowchart LR
+    A["1️⃣ --config flag"] --> B["2️⃣ GRUND_CONFIG env"]
+    B --> C["3️⃣ Local search<br/>(up to 5 dirs)"]
+    C --> D["4️⃣ ~/.grund/config.yaml"]
+    D --> E["❌ Error"]
+
+    style A fill:#1976D2,color:#fff
+    style B fill:#388E3C,color:#fff
+    style C fill:#F57C00,color:#fff
+    style D fill:#7B1FA2,color:#fff
+    style E fill:#D32F2F,color:#fff
+```
+
+**Fix options:**
 
 Set the `GRUND_CONFIG` environment variable:
 ```bash
@@ -567,6 +432,11 @@ export GRUND_CONFIG=/path/to/services.yaml
 Or use the `--config` flag:
 ```bash
 grund --config=/path/to/services.yaml up my-service
+```
+
+Or run the setup wizard:
+```bash
+grund init
 ```
 
 ### "Container is unhealthy"

@@ -1,0 +1,35 @@
+version: "1"
+
+service:
+  name: notification-service
+  type: node
+  port: 8082
+  build:
+    dockerfile: Dockerfile
+    context: .
+  health:
+    endpoint: /health
+    interval: 5s
+    timeout: 3s
+    retries: 10
+
+requires:
+  services:
+    - order-service
+  infrastructure:
+    sns:
+      topics:
+        - name: notifications
+    s3:
+      buckets:
+        - name: notification-logs
+
+env:
+  APP_ENV: development
+  LOG_LEVEL: debug
+
+env_refs:
+  AWS_ENDPOINT: "${localstack.endpoint}"
+  AWS_REGION: "${localstack.region}"
+  NOTIFICATIONS_TOPIC_ARN: "${sns.notifications.arn}"
+  LOGS_BUCKET_URL: "${s3.notification-logs.url}"

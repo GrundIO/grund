@@ -1,4 +1,4 @@
-.PHONY: build install test test-unit test-integration test-e2e test-race test-coverage clean run fmt lint
+.PHONY: build install test test-unit test-integration test-e2e test-race test-coverage clean run fmt lint record-gifs record-gif
 
 fmt:
 	gofmt -w .
@@ -37,3 +37,18 @@ clean:
 
 run:
 	go run .
+
+# GIF Recording (requires VHS: brew install charmbracelet/tap/vhs)
+# The script handles all prerequisites automatically:
+#   - Checks Docker is running
+#   - Verifies grund is installed
+#   - Starts/stops demo services as needed
+
+record-gifs:
+	@./scripts/record-gifs.sh
+
+record-gif:
+ifndef TAPE
+	$(error TAPE is required. Usage: make record-gif TAPE=grund-up)
+endif
+	@./scripts/record-gifs.sh $(TAPE)

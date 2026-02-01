@@ -1,0 +1,36 @@
+version: "1"
+
+service:
+  name: order-service
+  type: python
+  port: 8081
+  build:
+    dockerfile: Dockerfile
+    context: .
+  health:
+    endpoint: /health
+    interval: 5s
+    timeout: 3s
+    retries: 10
+
+requires:
+  services:
+    - user-service
+  infrastructure:
+    postgres:
+      database: orders_db
+    sqs:
+      queues:
+        - name: orders
+          dlq: true
+
+env:
+  APP_ENV: development
+  LOG_LEVEL: debug
+
+env_refs:
+  DATABASE_URL: "postgres://postgres:postgres@${postgres.host}:${postgres.port}/${self.postgres.database}?sslmode=disable"
+  USER_SERVICE_URL: "http://${user-service.host}:${user-service.port}"
+  ORDERS_QUEUE_URL: "${sqs.orders.url}"
+  AWS_ENDPOINT: "${localstack.endpoint}"
+  AWS_REGION: "${localstack.region}"

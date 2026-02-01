@@ -2,6 +2,9 @@
 
 This document provides detailed documentation for all Grund CLI commands.
 
+> [!TIP]
+> Enable shell completion for faster command entry. See [Shell Completion](#shell-completion) section below.
+
 ## Global Flags
 
 | Flag | Short | Description |
@@ -30,6 +33,8 @@ Grund automatically finds configuration in this priority order:
 
 Start services and their dependencies.
 
+![Grund Up](../assets/grund-up.gif)
+
 ```bash
 grund up [services...] [flags]
 ```
@@ -42,6 +47,9 @@ grund up [services...] [flags]
 |------|-------------|
 | `--no-deps` | Only start specified services, skip dependencies |
 | `--infra-only` | Only start infrastructure (postgres, redis, etc.), skip application services |
+
+> [!NOTE]
+> Use `--infra-only` when you want to run your service locally (outside Docker) but still need the infrastructure.
 | `--build` | Force rebuild containers |
 | `--local` | Run service locally (not in container) - *planned* |
 
@@ -117,6 +125,8 @@ grund down
 
 Show the status of all services and infrastructure.
 
+![Grund Status](../assets/grund-status.gif)
+
 ```bash
 grund status
 ```
@@ -150,6 +160,8 @@ grund status
 ### `grund logs`
 
 View logs from services.
+
+![Grund Logs](../assets/grund-logs.gif)
 
 ```bash
 grund logs [services...] [flags]
@@ -221,6 +233,9 @@ Stop all services and optionally clean up resources.
 grund reset [flags]
 ```
 
+> [!WARNING]
+> Using `--volumes` will **permanently delete** all database data. This cannot be undone!
+
 **Flags:**
 | Flag | Short | Description |
 |------|-------|-------------|
@@ -239,13 +254,13 @@ grund reset -v
 grund reset -v --images
 ```
 
-**Warning:** Using `--volumes` will delete all database data. Use with caution.
-
 ---
 
 ### `grund init`
 
 Interactive setup wizard for first-time users.
+
+![Grund Init](../assets/grund-init.gif)
 
 ```bash
 grund init
@@ -269,6 +284,8 @@ grund init
 ### `grund config show`
 
 Show Grund configuration and service details.
+
+![Grund Config Show](../assets/grund-config-show.gif)
 
 ```bash
 grund config show [service]
@@ -303,33 +320,11 @@ grund config show user-service
 
 ---
 
-### `grund config init`
-
-Initialize global Grund configuration.
-
-```bash
-grund config init
-```
-
-**What it does:**
-Creates `~/.grund/config.yaml` with default settings.
-
-**Global config options (all optional with defaults):**
-- `docker.compose_command`: Docker compose command (default: `docker compose`)
-- `localstack.endpoint`: LocalStack endpoint (default: `http://localhost:4566`)
-- `localstack.region`: AWS region for LocalStack (default: `us-east-1`)
-
-**Examples:**
-```bash
-# One-time setup for a new machine
-grund config init
-```
-
----
-
 ### `grund service init`
 
 Initialize Grund configuration for a new service.
+
+![Grund Service Init](../assets/grund-service-init.gif)
 
 ```bash
 grund service init
@@ -356,6 +351,8 @@ grund service init
 ### `grund service add`
 
 Add infrastructure to an existing service.
+
+![Grund Service Add](../assets/grund-service-add.gif)
 
 ```bash
 grund service add <type> [name]
