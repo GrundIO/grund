@@ -80,6 +80,6 @@ func (p *PostgresProvisioner) ProvisionRedis(ctx context.Context, config *infras
 }
 
 // ProvisionLocalStack not applicable
-func (p *PostgresProvisioner) ProvisionLocalStack(ctx context.Context, req infrastructure.InfrastructureRequirements) error {
-	return fmt.Errorf("localstack provisioning not supported by postgres provisioner")
+func (p *PostgresProvisioner) ProvisionLocalStack(ctx context.Context, req infrastructure.InfrastructureRequirements) (*ports.ProvisionedAWSResources, error) {
+	return nil, fmt.Errorf("localstack provisioning not supported by postgres provisioner")
 }

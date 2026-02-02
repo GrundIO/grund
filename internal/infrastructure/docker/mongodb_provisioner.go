@@ -35,6 +35,6 @@ func (m *MongoDBProvisioner) ProvisionRedis(ctx context.Context, config *infrast
 }
 
 // ProvisionLocalStack not applicable
-func (m *MongoDBProvisioner) ProvisionLocalStack(ctx context.Context, req infrastructure.InfrastructureRequirements) error {
-	return fmt.Errorf("localstack provisioning not supported by mongodb provisioner")
+func (m *MongoDBProvisioner) ProvisionLocalStack(ctx context.Context, req infrastructure.InfrastructureRequirements) (*ports.ProvisionedAWSResources, error) {
+	return nil, fmt.Errorf("localstack provisioning not supported by mongodb provisioner")
 }

@@ -39,7 +39,35 @@ type InfrastructureProvisioner interface {
 	ProvisionPostgres(ctx context.Context, config *infrastructure.PostgresConfig) error
 	ProvisionMongoDB(ctx context.Context, config *infrastructure.MongoDBConfig) error
 	ProvisionRedis(ctx context.Context, config *infrastructure.RedisConfig) error
-	ProvisionLocalStack(ctx context.Context, req infrastructure.InfrastructureRequirements) error
+	ProvisionLocalStack(ctx context.Context, req infrastructure.InfrastructureRequirements) (*ProvisionedAWSResources, error)
+}
+
+// ProvisionedAWSResources contains the actual resource details from LocalStack
+type ProvisionedAWSResources struct {
+	SQS map[string]ProvisionedQueue // queue name -> details
+	SNS map[string]ProvisionedTopic // topic name -> details
+	S3  map[string]ProvisionedBucket // bucket name -> details
+}
+
+// ProvisionedQueue contains actual SQS queue details from LocalStack
+type ProvisionedQueue struct {
+	Name   string
+	URL    string
+	ARN    string
+	DLQURL string // Empty if no DLQ
+	DLQARN string // Empty if no DLQ
+}
+
+// ProvisionedTopic contains actual SNS topic details from LocalStack
+type ProvisionedTopic struct {
+	Name string
+	ARN  string
+}
+
+// ProvisionedBucket contains actual S3 bucket details from LocalStack
+type ProvisionedBucket struct {
+	Name string
+	URL  string
 }
 
 // HealthChecker defines the interface for health checking

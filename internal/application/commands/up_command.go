@@ -119,11 +119,22 @@ func (h *UpCommandHandler) Handle(ctx context.Context, cmd UpCommand) error {
 	if infraReqs.SQS != nil || infraReqs.SNS != nil || infraReqs.S3 != nil {
 		ui.Step("Provisioning AWS resources in LocalStack...")
 	}
-	if err := h.provisionInfrastructure(ctx, infraReqs); err != nil {
+	awsResources, err := h.provisionInfrastructure(ctx, infraReqs)
+	if err != nil {
 		return fmt.Errorf("failed to provision infrastructure: %w", err)
 	}
 	if infraReqs.SQS != nil || infraReqs.SNS != nil || infraReqs.S3 != nil {
 		ui.Successf("AWS resources provisioned")
+	}
+
+	// 8.5. Regenerate service compose files with real AWS resource URLs
+	// Now that we have actual URLs/ARNs from LocalStack, update the compose files
+	if awsResources != nil {
+		ui.Step("Updating service configuration with actual AWS resource URLs...")
+		if err := h.regenerateComposeWithAWSResources(services, infraReqs, tunnelContext, awsResources); err != nil {
+			return fmt.Errorf("failed to update compose with AWS resources: %w", err)
+		}
+		ui.Successf("Service configuration updated")
 	}
 
 	// 9. Start services in parallel (no ordering enforced)
@@ -223,28 +234,30 @@ func (h *UpCommandHandler) aggregateInfrastructure(services []*service.Service) 
 	return infrastructure.Aggregate(reqs...)
 }
 
-func (h *UpCommandHandler) provisionInfrastructure(ctx context.Context, req infrastructure.InfrastructureRequirements) error {
+func (h *UpCommandHandler) provisionInfrastructure(ctx context.Context, req infrastructure.InfrastructureRequirements) (*ports.ProvisionedAWSResources, error) {
 	if req.Postgres != nil {
 		if err := h.provisioner.ProvisionPostgres(ctx, req.Postgres); err != nil {
-			return fmt.Errorf("postgres: %w", err)
+			return nil, fmt.Errorf("postgres: %w", err)
 		}
 	}
 	if req.MongoDB != nil {
 		if err := h.provisioner.ProvisionMongoDB(ctx, req.MongoDB); err != nil {
-			return fmt.Errorf("mongodb: %w", err)
+			return nil, fmt.Errorf("mongodb: %w", err)
 		}
 	}
 	if req.Redis != nil {
 		if err := h.provisioner.ProvisionRedis(ctx, req.Redis); err != nil {
-			return fmt.Errorf("redis: %w", err)
+			return nil, fmt.Errorf("redis: %w", err)
 		}
 	}
 	if req.SQS != nil || req.SNS != nil || req.S3 != nil {
-		if err := h.provisioner.ProvisionLocalStack(ctx, req); err != nil {
-			return fmt.Errorf("localstack: %w", err)
+		awsResources, err := h.provisioner.ProvisionLocalStack(ctx, req)
+		if err != nil {
+			return nil, fmt.Errorf("localstack: %w", err)
 		}
+		return awsResources, nil
 	}
-	return nil
+	return nil, nil
 }
 
 func (h *UpCommandHandler) generateCompose(services []*service.Service, req infrastructure.InfrastructureRequirements, tunnelCtx map[string]ports.TunnelContext) error {
@@ -267,6 +280,18 @@ func (h *UpCommandHandler) generateCompose(services []*service.Service, req infr
 
 func (h *UpCommandHandler) startServices(ctx context.Context, order []service.ServiceName) error {
 	return h.orchestrator.StartServices(ctx, order)
+}
+
+// regenerateComposeWithAWSResources regenerates service compose files with actual AWS resource URLs/ARNs
+func (h *UpCommandHandler) regenerateComposeWithAWSResources(services []*service.Service, req infrastructure.InfrastructureRequirements, tunnelCtx map[string]ports.TunnelContext, awsResources *ports.ProvisionedAWSResources) error {
+	fileSet, err := h.composeGenerator.GenerateWithAWSResources(services, req, tunnelCtx, awsResources)
+	if err != nil {
+		return err
+	}
+
+	// Update orchestrator with the regenerated compose files
+	h.orchestrator.SetComposeFiles(fileSet.AllPaths())
+	return nil
 }
 
 // startTunnels starts tunnels based on the tunnel requirement and returns tunnel context

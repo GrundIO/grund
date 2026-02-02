@@ -118,9 +118,35 @@ func (m *mockProvisioner) ProvisionRedis(ctx context.Context, config *infrastruc
 	return m.provisionErr
 }
 
-func (m *mockProvisioner) ProvisionLocalStack(ctx context.Context, req infrastructure.InfrastructureRequirements) error {
+func (m *mockProvisioner) ProvisionLocalStack(ctx context.Context, req infrastructure.InfrastructureRequirements) (*ports.ProvisionedAWSResources, error) {
 	m.localstackCalls = append(m.localstackCalls, req)
-	return m.provisionErr
+	if m.provisionErr != nil {
+		return nil, m.provisionErr
+	}
+	// Return mock provisioned resources
+	result := &ports.ProvisionedAWSResources{
+		SQS: make(map[string]ports.ProvisionedQueue),
+		SNS: make(map[string]ports.ProvisionedTopic),
+		S3:  make(map[string]ports.ProvisionedBucket),
+	}
+	if req.SQS != nil {
+		for _, q := range req.SQS.Queues {
+			result.SQS[q.Name] = ports.ProvisionedQueue{
+				Name: q.Name,
+				URL:  "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/" + q.Name,
+				ARN:  "arn:aws:sqs:us-east-1:000000000000:" + q.Name,
+			}
+		}
+	}
+	if req.SNS != nil {
+		for _, t := range req.SNS.Topics {
+			result.SNS[t.Name] = ports.ProvisionedTopic{
+				Name: t.Name,
+				ARN:  "arn:aws:sns:us-east-1:000000000000:" + t.Name,
+			}
+		}
+	}
+	return result, nil
 }
 
 type mockComposeGenerator struct {
@@ -138,6 +164,10 @@ func (m *mockComposeGenerator) Generate(services []*service.Service, infra infra
 }
 
 func (m *mockComposeGenerator) GenerateWithTunnels(services []*service.Service, infra infrastructure.InfrastructureRequirements, tunnelCtx map[string]ports.TunnelContext) (*ports.ComposeFileSet, error) {
+	return m.Generate(services, infra)
+}
+
+func (m *mockComposeGenerator) GenerateWithAWSResources(services []*service.Service, infra infrastructure.InfrastructureRequirements, tunnelCtx map[string]ports.TunnelContext, awsResources *ports.ProvisionedAWSResources) (*ports.ComposeFileSet, error) {
 	return m.Generate(services, infra)
 }
 
