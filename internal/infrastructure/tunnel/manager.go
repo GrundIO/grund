@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/vivekkundariya/grund/internal/application/ports"
-	"github.com/vivekkundariya/grund/internal/config"
+	"github.com/Saturn-Fintech/grund/internal/application/ports"
+	"github.com/Saturn-Fintech/grund/internal/config"
 )
 
 // Manager handles tunnel lifecycle

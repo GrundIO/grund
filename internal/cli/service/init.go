@@ -7,9 +7,9 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Saturn-Fintech/grund/internal/cli/prompts"
+	"github.com/Saturn-Fintech/grund/internal/ui"
 	"github.com/spf13/cobra"
-	"github.com/vivekkundariya/grund/internal/cli/prompts"
-	"github.com/vivekkundariya/grund/internal/ui"
 	"gopkg.in/yaml.v3"
 )
 

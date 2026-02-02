@@ -3,9 +3,9 @@ package cli
 import (
 	"fmt"
 
+	"github.com/Saturn-Fintech/grund/internal/application/commands"
+	"github.com/Saturn-Fintech/grund/internal/cli/shared"
 	"github.com/spf13/cobra"
-	"github.com/vivekkundariya/grund/internal/application/commands"
-	"github.com/vivekkundariya/grund/internal/cli/shared"
 )
 
 var restartBuild bool

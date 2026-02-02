@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vivekkundariya/grund/internal/domain/infrastructure"
+	"github.com/Saturn-Fintech/grund/internal/domain/infrastructure"
 )
 
 func TestNewPort_Valid(t *testing.T) {

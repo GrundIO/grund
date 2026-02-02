@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 
-	"github.com/vivekkundariya/grund/internal/application/ports"
+	"github.com/Saturn-Fintech/grund/internal/application/ports"
 )
 
 // DownCommand represents the command to stop all services

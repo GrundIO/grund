@@ -3,7 +3,7 @@ package resolver
 import (
 	"fmt"
 
-	"github.com/vivekkundariya/grund/internal/config"
+	"github.com/Saturn-Fintech/grund/internal/config"
 )
 
 // DependencyGraph represents the dependency graph of services

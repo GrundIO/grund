@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/vivekkundariya/grund/internal/application/ports"
-	"github.com/vivekkundariya/grund/internal/domain/service"
+	"github.com/Saturn-Fintech/grund/internal/application/ports"
+	"github.com/Saturn-Fintech/grund/internal/domain/service"
 	"gopkg.in/yaml.v3"
 )
 

@@ -1,8 +1,8 @@
 package ports
 
 import (
-	"github.com/vivekkundariya/grund/internal/domain/infrastructure"
-	"github.com/vivekkundariya/grund/internal/domain/service"
+	"github.com/Saturn-Fintech/grund/internal/domain/infrastructure"
+	"github.com/Saturn-Fintech/grund/internal/domain/service"
 )
 
 // ComposeFileSet represents the collection of generated compose files

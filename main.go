@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/vivekkundariya/grund/internal/cli"
+	"github.com/Saturn-Fintech/grund/internal/cli"
 )
 
 func main() {
