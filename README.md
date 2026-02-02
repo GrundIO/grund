@@ -5,8 +5,7 @@
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 [![Go Report Card](https://img.shields.io/badge/Go%20Report-A-success?style=for-the-badge&logo=go)](https://goreportcard.com/report/github.com/Saturn-Fintech/grund)
-[![GitHub Release](https://img.shields.io/github/v/release/GrundHQ/grund?style=for-the-badge&logo=github)](https://github.com/Saturn-Fintech/grund/releases)
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/vivekkundariya)
+[![GitHub Release](https://img.shields.io/github/v/release/Saturn-Fintech/grund?style=for-the-badge&logo=github)](https://github.com/Saturn-Fintech/grund/releases)
 
 **Grund** is a CLI tool for local microservice development. One command spins up any service with all its dependencies—other services, databases, queues, and caches—in the correct order.
 
