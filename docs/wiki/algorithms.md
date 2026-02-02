@@ -341,7 +341,7 @@ Aggregated result:
 
 ### Overview
 
-Resolves `${placeholder}` syntax in environment variable references to actual values at compose-generation time.
+Resolves `${placeholder}` syntax in environment variables to actual values at compose-generation time.
 
 ### Supported Placeholders
 
@@ -430,8 +430,8 @@ Algorithm: resolvePlaceholder(path, context)
 
 **Example:**
 ```yaml
-# Input (grund.yaml env_refs)
-env_refs:
+# Input (grund.yaml env)
+env:
   DATABASE_URL: "postgres://postgres:postgres@${postgres.host}:${postgres.port}/${self.postgres.database}"
   ORDERS_QUEUE_URL: "${sqs.orders.url}"
   USER_SERVICE_URL: "http://${user-service.host}:${user-service.port}"

@@ -86,7 +86,7 @@ grund up user-service --build
 grund up user-service -v
 
 # Service with tunnel (LocalStack exposed via cloudflared)
-# Tunnel URL available as ${tunnel.localstack.url} in env_refs
+# Tunnel URL available as ${tunnel.localstack.url} in env
 grund up s3-upload-service
 ```
 

@@ -1,12 +1,12 @@
 # Environment Variable Placeholders
 
-Visual reference for all `${...}` placeholders available in `env_refs`.
+Visual reference for all `${...}` placeholders available in `env`.
 
 ## How It Works
 
 ```mermaid
 flowchart LR
-    A["grund.yaml<br/>env_refs"] --> B["Environment<br/>Resolver"]
+    A["grund.yaml<br/>env"] --> B["Environment<br/>Resolver"]
     B --> C["docker-compose.yaml<br/>environment"]
 
     style A fill:#fff3e0
@@ -16,7 +16,7 @@ flowchart LR
 
 **Input (grund.yaml):**
 ```yaml
-env_refs:
+env:
   DATABASE_URL: "postgres://postgres:postgres@${postgres.host}:${postgres.port}/${self.postgres.database}"
 ```
 

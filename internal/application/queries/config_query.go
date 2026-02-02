@@ -48,18 +48,10 @@ func (h *ConfigQueryHandler) Handle(query ConfigQuery) (*ResolvedConfig, error) 
 	// Build environment context based on service requirements
 	envContext := h.buildEnvironmentContext(svc)
 
-	resolvedEnv, err := h.envResolver.Resolve(svc.Environment.References, envContext)
+	// Resolve all environment variables (all values support ${placeholder} syntax)
+	env, err := h.envResolver.Resolve(svc.Environment.Variables, envContext)
 	if err != nil {
 		return nil, err
-	}
-
-	// Merge with direct env vars
-	env := make(map[string]string)
-	for k, v := range svc.Environment.Variables {
-		env[k] = v
-	}
-	for k, v := range resolvedEnv {
-		env[k] = v
 	}
 
 	// Collect infrastructure types

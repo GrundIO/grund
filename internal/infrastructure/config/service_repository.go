@@ -89,8 +89,7 @@ type ServiceConfigDTO struct {
 	Version  string                     `yaml:"version"`
 	Service  ServiceInfoDTO             `yaml:"service"`
 	Requires RequirementsDTO            `yaml:"requires"`
-	Env      map[string]string          `yaml:"env"`
-	EnvRefs  map[string]string          `yaml:"env_refs"`
+	Env      map[string]string          `yaml:"env"` // All values support ${placeholder} syntax
 	Secrets  map[string]SecretConfigDTO `yaml:"secrets,omitempty"`
 }
 
@@ -270,9 +269,8 @@ func (r *ServiceRepositoryImpl) toDomainService(dto ServiceConfigDTO, name servi
 	}
 
 	env := service.Environment{
-		Variables:  dto.Env,
-		References: dto.EnvRefs,
-		Secrets:    secrets,
+		Variables: dto.Env,
+		Secrets:   secrets,
 	}
 
 	svc := &service.Service{
@@ -401,7 +399,6 @@ func (r *ServiceRepositoryImpl) toConfigDTO(svc *service.Service) ServiceConfigD
 			Services: make([]string, len(svc.Dependencies.Services)),
 		},
 		Env:     svc.Environment.Variables,
-		EnvRefs: svc.Environment.References,
 		Secrets: secretsDTO,
 	}
 
@@ -446,7 +443,7 @@ func parseDuration(s string) (time.Duration, error) {
 }
 
 // ExtractTunnelConfig extracts just the tunnel configuration from a service path
-// This is a lightweight operation that doesn't resolve env_refs
+// This is a lightweight operation that doesn't resolve environment placeholders
 func (r *ServiceRepositoryImpl) ExtractTunnelConfig(name service.ServiceName) (*infrastructure.TunnelRequirement, error) {
 	servicePath, err := r.registryRepo.GetServicePath(name)
 	if err != nil {

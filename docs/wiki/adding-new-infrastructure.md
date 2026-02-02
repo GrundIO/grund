@@ -445,7 +445,7 @@ func addScyllaDB(config map[string]any, infra map[string]any, configPath string)
     }
     infra["scylladb"] = scylla
 
-    // Add env_ref for ScyllaDB connection
+    // Add env for ScyllaDB connection
     addEnvRef(config, "SCYLLADB_HOSTS", "${scylladb.host}:${scylladb.port}")
     addEnvRef(config, "SCYLLADB_KEYSPACE", "${self.scylladb.keyspace}")
 
@@ -506,10 +506,10 @@ func generateGrundYAML(cfg *initConfig) string {
         infrastructure["scylladb"] = scylla
     }
 
-    // ... env_refs section ...
+    // ... env section ...
     if cfg.ScyllaDB != nil {
-        envRefs["SCYLLADB_HOSTS"] = "${scylladb.host}:${scylladb.port}"
-        envRefs["SCYLLADB_KEYSPACE"] = "${self.scylladb.keyspace}"
+        env["SCYLLADB_HOSTS"] = "${scylladb.host}:${scylladb.port}"
+        env["SCYLLADB_KEYSPACE"] = "${self.scylladb.keyspace}"
     }
 }
 ```
@@ -664,7 +664,7 @@ requires:
     scylladb:
       keyspace: test_keyspace
 
-env_refs:
+env:
   SCYLLADB_HOSTS: "${scylladb.host}:${scylladb.port}"
   SCYLLADB_KEYSPACE: "${self.scylladb.keyspace}"
 ```
@@ -878,7 +878,7 @@ requires:
           host: localhost
           port: "4566"
 
-env_refs:
+env:
   PUBLIC_ENDPOINT: "${tunnel.localstack.url}"
 ```
 

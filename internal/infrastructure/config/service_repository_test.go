@@ -59,8 +59,6 @@ requires:
 
 env:
   APP_ENV: test
-
-env_refs:
   DATABASE_URL: "postgres://localhost:5432/${self.postgres.database}"
 `
 
