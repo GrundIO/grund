@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/vivekkundariya/grund/internal/domain/service"
-	"github.com/vivekkundariya/grund/internal/ui"
+	"github.com/Saturn-Fintech/grund/internal/domain/service"
+	"github.com/Saturn-Fintech/grund/internal/ui"
 )
 
 // SecretsLoader loads secrets from ~/.grund/secrets.env and shell environment

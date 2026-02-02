@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/Saturn-Fintech/grund/internal/ui"
 	"github.com/spf13/cobra"
-	"github.com/vivekkundariya/grund/internal/ui"
 	"gopkg.in/yaml.v3"
 )
 

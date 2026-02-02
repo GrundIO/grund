@@ -3,13 +3,13 @@ package cli
 import (
 	"fmt"
 
+	"github.com/Saturn-Fintech/grund/internal/application/wiring"
+	"github.com/Saturn-Fintech/grund/internal/cli/configcmd"
+	"github.com/Saturn-Fintech/grund/internal/cli/service"
+	"github.com/Saturn-Fintech/grund/internal/cli/shared"
+	"github.com/Saturn-Fintech/grund/internal/config"
+	"github.com/Saturn-Fintech/grund/internal/ui"
 	"github.com/spf13/cobra"
-	"github.com/vivekkundariya/grund/internal/application/wiring"
-	"github.com/vivekkundariya/grund/internal/cli/configcmd"
-	"github.com/vivekkundariya/grund/internal/cli/service"
-	"github.com/vivekkundariya/grund/internal/cli/shared"
-	"github.com/vivekkundariya/grund/internal/config"
-	"github.com/vivekkundariya/grund/internal/ui"
 )
 
 var (
@@ -38,7 +38,7 @@ Configuration:
   grund config init           Set up global config
   grund config show           View configuration
 
-Documentation: https://github.com/vivekkundariya/grund`,
+Documentation: https://github.com/Saturn-Fintech/grund`,
 	Version: "0.2.0",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		// Set verbose mode on logger

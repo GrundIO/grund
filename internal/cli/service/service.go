@@ -1,8 +1,8 @@
 package service
 
 import (
+	"github.com/Saturn-Fintech/grund/internal/cli/service/add"
 	"github.com/spf13/cobra"
-	"github.com/vivekkundariya/grund/internal/cli/service/add"
 )
 
 // Cmd is the parent command for service management

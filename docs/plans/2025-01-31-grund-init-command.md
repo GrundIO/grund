@@ -47,8 +47,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/vivekkundariya/grund/internal/config"
-	"github.com/vivekkundariya/grund/internal/ui"
+	"github.com/Saturn-Fintech/grund/internal/config"
+	"github.com/Saturn-Fintech/grund/internal/ui"
 )
 
 var initCmd = &cobra.Command{
@@ -486,7 +486,7 @@ git commit -m "feat(cli): Add skill installer infrastructure"
 ```go
 import (
 	// ... existing imports
-	"github.com/vivekkundariya/grund/internal/cli/skills"
+	"github.com/Saturn-Fintech/grund/internal/cli/skills"
 )
 
 func handleAISkillsInit(reader *bufio.Reader) error {

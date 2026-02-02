@@ -786,7 +786,7 @@ package tunnel
 import (
 	"testing"
 
-	"github.com/vivekkundariya/grund/internal/config"
+	"github.com/Saturn-Fintech/grund/internal/config"
 )
 
 func TestManagerCreation(t *testing.T) {
@@ -884,7 +884,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/vivekkundariya/grund/internal/config"
+	"github.com/Saturn-Fintech/grund/internal/config"
 )
 
 // Manager handles tunnel lifecycle
@@ -1177,7 +1177,7 @@ package ports
 import (
 	"context"
 
-	"github.com/vivekkundariya/grund/internal/config"
+	"github.com/Saturn-Fintech/grund/internal/config"
 )
 
 // TunnelInfo represents a running tunnel

@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/vivekkundariya/grund/internal/config"
+	"github.com/Saturn-Fintech/grund/internal/config"
 )
 
 // TunnelInfo represents a running tunnel

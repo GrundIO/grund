@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vivekkundariya/grund/internal/application/ports"
-	"github.com/vivekkundariya/grund/internal/config"
-	"github.com/vivekkundariya/grund/internal/domain/infrastructure"
-	"github.com/vivekkundariya/grund/internal/domain/service"
-	"github.com/vivekkundariya/grund/internal/ui"
+	"github.com/Saturn-Fintech/grund/internal/application/ports"
+	"github.com/Saturn-Fintech/grund/internal/config"
+	"github.com/Saturn-Fintech/grund/internal/domain/infrastructure"
+	"github.com/Saturn-Fintech/grund/internal/domain/service"
+	"github.com/Saturn-Fintech/grund/internal/ui"
 )
 
 // UpCommand represents the command to start services

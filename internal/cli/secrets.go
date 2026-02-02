@@ -8,14 +8,14 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/Saturn-Fintech/grund/internal/application/queries"
+	"github.com/Saturn-Fintech/grund/internal/cli/shared"
+	"github.com/Saturn-Fintech/grund/internal/domain/service"
+	"github.com/Saturn-Fintech/grund/internal/infrastructure/generator"
+	"github.com/Saturn-Fintech/grund/internal/ui"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/spf13/cobra"
-	"github.com/vivekkundariya/grund/internal/application/queries"
-	"github.com/vivekkundariya/grund/internal/cli/shared"
-	"github.com/vivekkundariya/grund/internal/domain/service"
-	"github.com/vivekkundariya/grund/internal/infrastructure/generator"
-	"github.com/vivekkundariya/grund/internal/ui"
 )
 
 var secretsCmd = &cobra.Command{
