@@ -477,6 +477,21 @@ Use `-v` flag for debug information:
 grund -v up my-service
 ```
 
+## Contributors
+
+Thanks to these wonderful people who have contributed to Grund:
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/vivekkundariya">
+        <img src="https://github.com/vivekkundariya.png" width="80px;" alt="Vivek Kundariya"/><br />
+        <sub><b>Vivek Kundariya</b></sub>
+      </a>
+    </td>
+  </tr>
+</table>
+
 ## License
 
 MIT
