@@ -200,7 +200,7 @@ func (g *ComposeGeneratorImpl) Generate(services []*service.Service, infra infra
 	return fileSet, nil
 }
 
-// GenerateWithTunnels generates compose files with tunnel context for env_refs resolution
+// GenerateWithTunnels generates compose files with tunnel context for env resolution
 func (g *ComposeGeneratorImpl) GenerateWithTunnels(services []*service.Service, infra infrastructure.InfrastructureRequirements, tunnelCtx map[string]ports.TunnelContext) (*ports.ComposeFileSet, error) {
 	fileSet := &ports.ComposeFileSet{
 		ServicePaths: make(map[string]string),
@@ -418,7 +418,7 @@ func (g *ComposeGeneratorImpl) addSingleService(compose *ComposeFile, svc *servi
 	resolvedEnv := make(map[string]string)
 
 	// Add AWS credentials FIRST if LocalStack is used (as defaults)
-	// These can be overridden by static env or env_refs
+	// These can be overridden by user env values
 	if svc.RequiresInfrastructure("localstack") {
 		resolvedEnv["AWS_ENDPOINT"] = selfContext.LocalStack.Endpoint
 		resolvedEnv["AWS_REGION"] = selfContext.LocalStack.Region
@@ -427,14 +427,9 @@ func (g *ComposeGeneratorImpl) addSingleService(compose *ComposeFile, svc *servi
 		resolvedEnv["AWS_ACCOUNT_ID"] = selfContext.LocalStack.AccountID
 	}
 
-	// Add static environment variables (overrides defaults)
-	for k, v := range svc.Environment.Variables {
-		resolvedEnv[k] = v
-	}
-
-	// Resolve environment references (overrides static env)
-	if len(svc.Environment.References) > 0 {
-		resolved, err := g.envResolver.Resolve(svc.Environment.References, selfContext)
+	// Resolve all environment variables (all values support ${placeholder} syntax)
+	if len(svc.Environment.Variables) > 0 {
+		resolved, err := g.envResolver.Resolve(svc.Environment.Variables, selfContext)
 		if err != nil {
 			return fmt.Errorf("failed to resolve env: %w", err)
 		}

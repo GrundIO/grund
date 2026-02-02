@@ -375,8 +375,16 @@ func generateGrundYAML(cfg *initConfig) string {
 		envRefs[envKey] = fmt.Sprintf("http://${%s.host}:${%s.port}", svc, svc)
 	}
 
+	// Merge envRefs into env (all values support ${placeholder} syntax)
 	if len(envRefs) > 0 {
-		config["env_refs"] = envRefs
+		env, ok := config["env"].(map[string]string)
+		if !ok {
+			env = make(map[string]string)
+		}
+		for k, v := range envRefs {
+			env[k] = v
+		}
+		config["env"] = env
 	}
 
 	// Marshal to YAML

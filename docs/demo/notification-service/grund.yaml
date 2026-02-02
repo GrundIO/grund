@@ -27,8 +27,6 @@ requires:
 env:
   APP_ENV: development
   LOG_LEVEL: debug
-
-env_refs:
   AWS_ENDPOINT: "${localstack.endpoint}"
   AWS_REGION: "${localstack.region}"
   NOTIFICATIONS_TOPIC_ARN: "${sns.notifications.arn}"

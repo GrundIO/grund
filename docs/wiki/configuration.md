@@ -137,13 +137,10 @@ requires:
         - name: <bucket-name>
           seed: <seed-directory>
 
-# Static environment variables
+# Environment variables (all values support ${placeholder} syntax)
 env:
   KEY: value
   ANOTHER_KEY: value
-
-# Dynamic environment variable references
-env_refs:
   DATABASE_URL: "postgres://postgres:postgres@${postgres.host}:${postgres.port}/${self.postgres.database}"
   REDIS_URL: "redis://${redis.host}:${redis.port}"
 ```
@@ -320,10 +317,10 @@ infrastructure:
 - **cloudflared**: Install with `brew install cloudflared` (no account required)
 - **ngrok**: Install from https://ngrok.com/download (free account required)
 
-**Usage in env_refs:**
+**Usage in env:**
 
 ```yaml
-env_refs:
+env:
   # Use tunnel URL for presigned S3 URLs accessible by external services
   AWS_PUBLIC_ENDPOINT: "${tunnel.localstack.url}"
   WEBHOOK_BASE_URL: "${tunnel.api.url}"
@@ -331,22 +328,16 @@ env_refs:
 
 ### Environment Variables
 
-#### Static Variables (`env`)
+All values in the `env` section support `${placeholder}` syntax for dynamic resolution at startup.
 
 ```yaml
 env:
+  # Static values
   APP_ENV: development
   LOG_LEVEL: debug
   FEATURE_FLAG: "true"
-```
 
-#### Dynamic References (`env_refs`)
-
-Use `${placeholder}` syntax for values resolved at startup.
-
-```yaml
-env_refs:
-  # Database connections
+  # Database connections (dynamic)
   DATABASE_URL: "postgres://postgres:postgres@${postgres.host}:${postgres.port}/${self.postgres.database}"
   MONGO_URL: "mongodb://${mongodb.host}:${mongodb.port}/${self.mongodb.database}"
   REDIS_URL: "redis://${redis.host}:${redis.port}"
@@ -446,8 +437,6 @@ requires:
 env:
   APP_ENV: development
   LOG_LEVEL: debug
-
-env_refs:
   DATABASE_URL: "postgres://postgres:postgres@${postgres.host}:${postgres.port}/${self.postgres.database}"
   REDIS_URL: "redis://${redis.host}:${redis.port}"
   ORDERS_QUEUE_URL: "${sqs.orders.url}"

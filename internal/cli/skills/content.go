@@ -160,7 +160,7 @@ requires:
 
 ### Template Variables Reference
 
-Use ` + "`${variable}`" + ` syntax in ` + "`env_refs`" + `. All variables are resolved at startup.
+Use ` + "`${variable}`" + ` syntax in ` + "`env`" + `. All values are resolved at startup.
 
 **PostgreSQL:**
 | Variable | Example Value |
@@ -218,11 +218,11 @@ Use ` + "`${variable}`" + ` syntax in ` + "`env_refs`" + `. All variables are re
 
 ### Environment Variables Example
 ` + "```yaml" + `
+# All values support ${placeholder} syntax
 env:
   LOG_LEVEL: debug
   APP_ENV: development
 
-env_refs:
   # Database
   DATABASE_URL: "postgres://postgres:postgres@${postgres.host}:${postgres.port}/${self.postgres.database}"
   MONGO_URL: "mongodb://${mongodb.host}:${mongodb.port}/${self.mongodb.database}"
@@ -285,9 +285,9 @@ Or use the CLI:
 grund service add redis
 ` + "```" + `
 
-2. Add environment reference:
+2. Add environment variable:
 ` + "```yaml" + `
-env_refs:
+env:
   REDIS_URL: "redis://${redis.host}:${redis.port}"
 ` + "```" + `
 
@@ -424,7 +424,7 @@ grund config show my-service | grep DATABASE
 
 # Common issue: using localhost instead of container name
 # Wrong: postgres://localhost:5432
-# Right: postgres://postgres:5432 (in env_refs use ${postgres.host})
+# Right: postgres://postgres:5432 (in env use ${postgres.host})
 ` + "```" + `
 
 ### Changes to grund.yaml not taking effect

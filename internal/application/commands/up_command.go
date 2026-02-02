@@ -87,7 +87,7 @@ func (h *UpCommandHandler) Handle(ctx context.Context, cmd UpCommand) error {
 	ui.Debug("Infrastructure requirements: postgres=%v, mongodb=%v, redis=%v, sqs=%v",
 		infraReqs.Postgres != nil, infraReqs.MongoDB != nil, infraReqs.Redis != nil, infraReqs.SQS != nil)
 
-	// 5.5. Start tunnels FIRST if configured (so tunnel URLs are available for env_refs)
+	// 5.5. Start tunnels FIRST if configured (so tunnel URLs are available for env)
 	// Tunnels point to localhost ports that will be bound by infrastructure containers
 	var tunnelContext map[string]ports.TunnelContext
 	if infraReqs.Tunnel != nil && h.tunnelManager != nil {
@@ -100,7 +100,7 @@ func (h *UpCommandHandler) Handle(ctx context.Context, cmd UpCommand) error {
 		ui.Successf("Tunnels started")
 	}
 
-	// 6. Generate docker-compose (now with tunnel context for env_refs resolution)
+	// 6. Generate docker-compose (now with tunnel context for env resolution)
 	ui.Step("Generating docker-compose configuration...")
 	if err := h.generateCompose(services, infraReqs, tunnelContext); err != nil {
 		return fmt.Errorf("failed to generate compose file: %w", err)
@@ -304,7 +304,7 @@ func (h *UpCommandHandler) startTunnels(ctx context.Context, tunnelReq *infrastr
 		return nil, err
 	}
 
-	// Build tunnel context for env_refs resolution
+	// Build tunnel context for env resolution
 	tunnelContext := make(map[string]ports.TunnelContext)
 	for _, t := range tunnels {
 		ui.Infof("  %s: %s -> %s", t.Name, t.PublicURL, t.LocalAddr)
