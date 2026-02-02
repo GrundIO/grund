@@ -237,10 +237,10 @@ grund reset [flags]
 > Using `--volumes` will **permanently delete** all database data. This cannot be undone!
 
 **Flags:**
-| Flag | Short | Description |
-|------|-------|-------------|
-| `--volumes` | `-v` | Remove named volumes (database data will be lost) |
-| `--images` | | Remove locally built images |
+| Flag | Description |
+|------|-------------|
+| `--volumes` | Remove named volumes (database data will be lost) |
+| `--images` | Remove locally built images |
 
 **Examples:**
 ```bash
@@ -248,10 +248,10 @@ grund reset [flags]
 grund reset
 
 # Stop and remove volumes (fresh start, loses all data)
-grund reset -v
+grund reset --volumes
 
 # Full cleanup: stop, remove volumes and images
-grund reset -v --images
+grund reset --volumes --images
 ```
 
 ---
