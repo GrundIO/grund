@@ -27,8 +27,6 @@ requires:
 env:
   APP_ENV: development
   LOG_LEVEL: debug
-
-env_refs:
   DATABASE_URL: "postgres://postgres:postgres@${postgres.host}:${postgres.port}/${self.postgres.database}?sslmode=disable"
   USER_SERVICE_URL: "http://${user-service.host}:${user-service.port}"
   ORDERS_QUEUE_URL: "${sqs.orders.url}"

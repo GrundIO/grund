@@ -68,8 +68,7 @@ func CreateTestService(name string, port int, deps []string) *service.Service {
 			Infrastructure: infrastructure.InfrastructureRequirements{},
 		},
 		Environment: service.Environment{
-			Variables:  map[string]string{"APP_ENV": "test"},
-			References: map[string]string{},
+			Variables: map[string]string{"APP_ENV": "test"},
 		},
 	}
 }

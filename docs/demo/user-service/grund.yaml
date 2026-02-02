@@ -23,7 +23,5 @@ requires:
 env:
   APP_ENV: development
   LOG_LEVEL: debug
-
-env_refs:
   DATABASE_URL: "postgres://postgres:postgres@${postgres.host}:${postgres.port}/${self.postgres.database}?sslmode=disable"
   REDIS_URL: "redis://${redis.host}:${redis.port}"

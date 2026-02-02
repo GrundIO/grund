@@ -200,7 +200,7 @@ func (g *ComposeGeneratorImpl) Generate(services []*service.Service, infra infra
 	return fileSet, nil
 }
 
-// GenerateWithTunnels generates compose files with tunnel context for env_refs resolution
+// GenerateWithTunnels generates compose files with tunnel context for env resolution
 func (g *ComposeGeneratorImpl) GenerateWithTunnels(services []*service.Service, infra infrastructure.InfrastructureRequirements, tunnelCtx map[string]ports.TunnelContext) (*ports.ComposeFileSet, error) {
 	fileSet := &ports.ComposeFileSet{
 		ServicePaths: make(map[string]string),
@@ -417,29 +417,25 @@ func (g *ComposeGeneratorImpl) addSingleService(compose *ComposeFile, svc *servi
 	// Resolve environment variables
 	resolvedEnv := make(map[string]string)
 
-	// Add static environment variables
-	for k, v := range svc.Environment.Variables {
-		resolvedEnv[k] = v
-	}
-
-	// Resolve environment references
-	if len(svc.Environment.References) > 0 {
-		resolved, err := g.envResolver.Resolve(svc.Environment.References, selfContext)
-		if err != nil {
-			return fmt.Errorf("failed to resolve env: %w", err)
-		}
-		for k, v := range resolved {
-			resolvedEnv[k] = v
-		}
-	}
-
-	// Add AWS credentials if LocalStack is used
+	// Add AWS credentials FIRST if LocalStack is used (as defaults)
+	// These can be overridden by user env values
 	if svc.RequiresInfrastructure("localstack") {
 		resolvedEnv["AWS_ENDPOINT"] = selfContext.LocalStack.Endpoint
 		resolvedEnv["AWS_REGION"] = selfContext.LocalStack.Region
 		resolvedEnv["AWS_ACCESS_KEY_ID"] = selfContext.LocalStack.AccessKeyID
 		resolvedEnv["AWS_SECRET_ACCESS_KEY"] = selfContext.LocalStack.SecretAccessKey
 		resolvedEnv["AWS_ACCOUNT_ID"] = selfContext.LocalStack.AccountID
+	}
+
+	// Resolve all environment variables (all values support ${placeholder} syntax)
+	if len(svc.Environment.Variables) > 0 {
+		resolved, err := g.envResolver.Resolve(svc.Environment.Variables, selfContext)
+		if err != nil {
+			return fmt.Errorf("failed to resolve env: %w", err)
+		}
+		for k, v := range resolved {
+			resolvedEnv[k] = v
+		}
 	}
 
 	// Add resolved secrets

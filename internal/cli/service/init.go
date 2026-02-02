@@ -347,37 +347,31 @@ func generateGrundYAML(cfg *initConfig) string {
 
 	config["requires"] = requires
 
-	// Environment variables
+	// Environment variables (all values support ${placeholder} syntax)
 	env := map[string]string{
 		"APP_ENV":   "development",
 		"LOG_LEVEL": "debug",
 	}
-	config["env"] = env
-
-	// Environment references
-	envRefs := map[string]string{}
 
 	if cfg.Postgres != nil {
-		envRefs["DATABASE_URL"] = "postgres://postgres:postgres@${postgres.host}:${postgres.port}/${self.postgres.database}"
+		env["DATABASE_URL"] = "postgres://postgres:postgres@${postgres.host}:${postgres.port}/${self.postgres.database}"
 	}
 
 	if cfg.MongoDB != nil {
-		envRefs["MONGO_URL"] = "mongodb://${mongodb.host}:${mongodb.port}/${self.mongodb.database}"
+		env["MONGO_URL"] = "mongodb://${mongodb.host}:${mongodb.port}/${self.mongodb.database}"
 	}
 
 	if cfg.Redis {
-		envRefs["REDIS_URL"] = "redis://${redis.host}:${redis.port}"
+		env["REDIS_URL"] = "redis://${redis.host}:${redis.port}"
 	}
 
 	// Add service dependency URLs
 	for _, svc := range cfg.Services {
 		envKey := strings.ToUpper(strings.ReplaceAll(svc, "-", "_")) + "_URL"
-		envRefs[envKey] = fmt.Sprintf("http://${%s.host}:${%s.port}", svc, svc)
+		env[envKey] = fmt.Sprintf("http://${%s.host}:${%s.port}", svc, svc)
 	}
 
-	if len(envRefs) > 0 {
-		config["env_refs"] = envRefs
-	}
+	config["env"] = env
 
 	// Marshal to YAML
 	data, err := yaml.Marshal(config)

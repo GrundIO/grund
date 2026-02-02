@@ -64,15 +64,15 @@ func getInfrastructure(requires map[string]any) map[string]any {
 	return infrastructure
 }
 
-// addEnvRef adds an environment reference if it doesn't exist
+// addEnvRef adds an environment variable with placeholder syntax if it doesn't exist
 func addEnvRef(config map[string]any, key, value string) {
-	envRefs, ok := config["env_refs"].(map[string]any)
+	env, ok := config["env"].(map[string]any)
 	if !ok {
-		envRefs = make(map[string]any)
-		config["env_refs"] = envRefs
+		env = make(map[string]any)
+		config["env"] = env
 	}
-	if _, exists := envRefs[key]; !exists {
-		envRefs[key] = value
+	if _, exists := env[key]; !exists {
+		env[key] = value
 	}
 }
 

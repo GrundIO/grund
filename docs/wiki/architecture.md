@@ -155,7 +155,7 @@ type UpCommandHandler struct {
 func (h *UpCommandHandler) Handle(ctx context.Context, cmd UpCommand) error {
     // 1. Load services and resolve dependencies
     // 2. Aggregate infrastructure requirements
-    // 3. Start tunnels FIRST (so URLs available for env_refs)
+    // 3. Start tunnels FIRST (so URLs available for env)
     // 4. Generate docker-compose.yaml with tunnel context
     // 5. Start infrastructure and wait for health
     // 6. Provision resources (databases, queues, etc.)
@@ -250,7 +250,7 @@ type ComposeFileSet struct {
 }
 
 type EnvironmentResolver interface {
-    Resolve(envRefs map[string]string, context EnvironmentContext) (map[string]string, error)
+    Resolve(env map[string]string, context EnvironmentContext) (map[string]string, error)
 }
 
 // Health checker interface
@@ -317,10 +317,10 @@ func (c *CompositeInfrastructureProvisioner) ProvisionPostgres(ctx context.Conte
 // Resolves ${placeholder} syntax to actual values
 type EnvironmentResolverImpl struct{}
 
-func (r *EnvironmentResolverImpl) Resolve(envRefs map[string]string, ctx ports.EnvironmentContext) (map[string]string, error) {
-    // Resolves: ${infra.postgres.host} → "postgres"
+func (r *EnvironmentResolverImpl) Resolve(env map[string]string, ctx ports.EnvironmentContext) (map[string]string, error) {
+    // Resolves: ${postgres.host} → "postgres"
     //           ${sqs.my-queue.url} → "http://localstack:4566/000000000000/my-queue"
-    //           ${service.api.host} → "api"
+    //           ${user-service.host} → "user-service"
 }
 ```
 
