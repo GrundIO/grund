@@ -39,7 +39,15 @@ func (r *InfrastructureRequirements) Has(infraType string) bool {
 
 // PostgresConfig represents PostgreSQL configuration
 type PostgresConfig struct {
-	Database   string
+	Database   string             // Primary database (created by Docker via POSTGRES_DB)
+	Migrations string             // Migrations path for primary database
+	Seed       string             // Seed path for primary database
+	Databases  []PostgresDatabase // Additional databases from other services
+}
+
+// PostgresDatabase represents a single PostgreSQL database
+type PostgresDatabase struct {
+	Name       string
 	Migrations string
 	Seed       string
 }
@@ -118,11 +126,29 @@ func Aggregate(requirements ...InfrastructureRequirements) InfrastructureRequire
 	seenQueues := make(map[string]bool)
 	seenTopics := make(map[string]bool)
 	seenBuckets := make(map[string]bool)
+	seenDatabases := make(map[string]bool)
 
 	for _, req := range requirements {
-		// Single-instance: first config wins, all services share one container
-		if req.Postgres != nil && aggregated.Postgres == nil {
-			aggregated.Postgres = req.Postgres
+		// PostgreSQL: aggregate all databases from all services
+		if req.Postgres != nil {
+			if aggregated.Postgres == nil {
+				// First Postgres config becomes the primary
+				aggregated.Postgres = &PostgresConfig{
+					Database:   req.Postgres.Database,
+					Migrations: req.Postgres.Migrations,
+					Seed:       req.Postgres.Seed,
+					Databases:  []PostgresDatabase{},
+				}
+				seenDatabases[req.Postgres.Database] = true
+			} else if !seenDatabases[req.Postgres.Database] {
+				// Additional databases get added to the list
+				aggregated.Postgres.Databases = append(aggregated.Postgres.Databases, PostgresDatabase{
+					Name:       req.Postgres.Database,
+					Migrations: req.Postgres.Migrations,
+					Seed:       req.Postgres.Seed,
+				})
+				seenDatabases[req.Postgres.Database] = true
+			}
 		}
 		if req.MongoDB != nil && aggregated.MongoDB == nil {
 			aggregated.MongoDB = req.MongoDB
