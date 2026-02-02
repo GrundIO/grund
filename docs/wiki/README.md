@@ -192,6 +192,6 @@ When adding new features:
 
 ## See Also
 
-- [GitHub Repository](https://github.com/vivekkundariya/grund)
+- [GitHub Repository](https://github.com/Saturn-Fintech/grund)
 - [Architecture Deep Dive](./architecture.md)
 - [Full CLI Reference](./cli-commands.md)

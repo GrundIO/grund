@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/vivekkundariya/grund/internal/config"
+	"github.com/Saturn-Fintech/grund/internal/config"
 )
 
 func TestNewDockerOrchestrator(t *testing.T) {

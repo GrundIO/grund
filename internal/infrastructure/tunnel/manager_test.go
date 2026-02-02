@@ -3,7 +3,7 @@ package tunnel
 import (
 	"testing"
 
-	"github.com/vivekkundariya/grund/internal/config"
+	"github.com/Saturn-Fintech/grund/internal/config"
 )
 
 func TestManagerCreation(t *testing.T) {

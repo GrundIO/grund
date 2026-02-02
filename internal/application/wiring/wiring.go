@@ -5,14 +5,14 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/vivekkundariya/grund/internal/application/commands"
-	"github.com/vivekkundariya/grund/internal/application/queries"
-	appconfig "github.com/vivekkundariya/grund/internal/config"
-	"github.com/vivekkundariya/grund/internal/infrastructure/aws"
-	"github.com/vivekkundariya/grund/internal/infrastructure/config"
-	"github.com/vivekkundariya/grund/internal/infrastructure/docker"
-	"github.com/vivekkundariya/grund/internal/infrastructure/generator"
-	"github.com/vivekkundariya/grund/internal/infrastructure/tunnel"
+	"github.com/Saturn-Fintech/grund/internal/application/commands"
+	"github.com/Saturn-Fintech/grund/internal/application/queries"
+	appconfig "github.com/Saturn-Fintech/grund/internal/config"
+	"github.com/Saturn-Fintech/grund/internal/infrastructure/aws"
+	"github.com/Saturn-Fintech/grund/internal/infrastructure/config"
+	"github.com/Saturn-Fintech/grund/internal/infrastructure/docker"
+	"github.com/Saturn-Fintech/grund/internal/infrastructure/generator"
+	"github.com/Saturn-Fintech/grund/internal/infrastructure/tunnel"
 )
 
 // Container holds all dependencies (Dependency Injection Container)

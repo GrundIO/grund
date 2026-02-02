@@ -1,13 +1,13 @@
 package cli
 
 import (
+	"github.com/Saturn-Fintech/grund/internal/application/commands"
+	"github.com/Saturn-Fintech/grund/internal/application/wiring"
+	"github.com/Saturn-Fintech/grund/internal/cli/shared"
+	"github.com/Saturn-Fintech/grund/internal/config"
+	"github.com/Saturn-Fintech/grund/internal/infrastructure/docker"
+	"github.com/Saturn-Fintech/grund/internal/ui"
 	"github.com/spf13/cobra"
-	"github.com/vivekkundariya/grund/internal/application/commands"
-	"github.com/vivekkundariya/grund/internal/application/wiring"
-	"github.com/vivekkundariya/grund/internal/cli/shared"
-	"github.com/vivekkundariya/grund/internal/config"
-	"github.com/vivekkundariya/grund/internal/infrastructure/docker"
-	"github.com/vivekkundariya/grund/internal/ui"
 )
 
 var downCmd = &cobra.Command{

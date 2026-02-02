@@ -6,13 +6,13 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/Saturn-Fintech/grund/internal/application/ports"
+	"github.com/Saturn-Fintech/grund/internal/application/queries"
+	"github.com/Saturn-Fintech/grund/internal/cli/shared"
+	"github.com/Saturn-Fintech/grund/internal/config"
+	"github.com/Saturn-Fintech/grund/internal/domain/service"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
-	"github.com/vivekkundariya/grund/internal/application/ports"
-	"github.com/vivekkundariya/grund/internal/application/queries"
-	"github.com/vivekkundariya/grund/internal/cli/shared"
-	"github.com/vivekkundariya/grund/internal/config"
-	"github.com/vivekkundariya/grund/internal/domain/service"
 )
 
 var showCmd = &cobra.Command{

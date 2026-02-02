@@ -3,11 +3,11 @@ package cli
 import (
 	"fmt"
 
+	"github.com/Saturn-Fintech/grund/internal/application/commands"
+	"github.com/Saturn-Fintech/grund/internal/cli/shared"
+	"github.com/Saturn-Fintech/grund/internal/infrastructure/generator"
+	"github.com/Saturn-Fintech/grund/internal/ui"
 	"github.com/spf13/cobra"
-	"github.com/vivekkundariya/grund/internal/application/commands"
-	"github.com/vivekkundariya/grund/internal/cli/shared"
-	"github.com/vivekkundariya/grund/internal/infrastructure/generator"
-	"github.com/vivekkundariya/grund/internal/ui"
 )
 
 var (

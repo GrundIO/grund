@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Saturn-Fintech/grund/internal/config"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -11,7 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	sqstypes "github.com/aws/aws-sdk-go-v2/service/sqs/types"
-	"github.com/vivekkundariya/grund/internal/config"
 )
 
 // AWSResources aggregates all AWS resources needed

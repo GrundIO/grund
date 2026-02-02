@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vivekkundariya/grund/internal/application/ports"
-	"github.com/vivekkundariya/grund/internal/domain/infrastructure"
+	"github.com/Saturn-Fintech/grund/internal/application/ports"
+	"github.com/Saturn-Fintech/grund/internal/domain/infrastructure"
 )
 
 // MongoDBProvisioner implements infrastructure provisioning for MongoDB

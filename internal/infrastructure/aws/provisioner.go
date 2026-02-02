@@ -4,6 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Saturn-Fintech/grund/internal/application/ports"
+	"github.com/Saturn-Fintech/grund/internal/domain/infrastructure"
+	"github.com/Saturn-Fintech/grund/internal/infrastructure/generator"
+	"github.com/Saturn-Fintech/grund/internal/ui"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -11,10 +15,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
-	"github.com/vivekkundariya/grund/internal/application/ports"
-	"github.com/vivekkundariya/grund/internal/domain/infrastructure"
-	"github.com/vivekkundariya/grund/internal/infrastructure/generator"
-	"github.com/vivekkundariya/grund/internal/ui"
 )
 
 // LocalStackProvisioner implements InfrastructureProvisioner for LocalStack
