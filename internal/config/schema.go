@@ -3,12 +3,12 @@ package config
 import "time"
 
 // ServiceConfig represents the grund.yaml in each service
+// All values in Env support ${placeholder} syntax for dynamic resolution
 type ServiceConfig struct {
 	Version  string                  `yaml:"version"`
 	Service  ServiceInfo             `yaml:"service"`
 	Requires Requirements            `yaml:"requires"`
-	Env      map[string]string       `yaml:"env"`
-	EnvRefs  map[string]string       `yaml:"env_refs"`
+	Env      map[string]string       `yaml:"env"` // All values support ${placeholder} syntax
 	Secrets  map[string]SecretConfig `yaml:"secrets,omitempty"`
 }
 

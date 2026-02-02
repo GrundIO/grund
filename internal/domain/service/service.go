@@ -80,10 +80,10 @@ func (n ServiceName) String() string {
 }
 
 // Environment represents environment variables
+// All values support ${placeholder} syntax for dynamic resolution
 type Environment struct {
-	Variables  map[string]string
-	References map[string]string
-	Secrets    map[string]SecretRequirement
+	Variables map[string]string
+	Secrets   map[string]SecretRequirement
 }
 
 // SecretRequirement defines a secret required by the service

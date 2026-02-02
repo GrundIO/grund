@@ -181,7 +181,7 @@ requires:
   services:
     - user-service
 
-env_refs:
+env:
   USER_SERVICE_URL: "http://${user-service.host}:${user-service.port}"
 ```
 
@@ -199,7 +199,7 @@ env_refs:
 | Tunnel | `grund service add tunnel my-tunnel` | cloudflared or ngrok |
 
 > [!NOTE]
-> Tunnels start **before** services, so `${tunnel.localstack.url}` is always available in your `env_refs`.
+> Tunnels start **before** services, so `${tunnel.localstack.url}` is always available in your `env` section.
 
 </details>
 
@@ -274,11 +274,9 @@ requires:
           host: "${localstack.host}"
           port: "${localstack.port}"
 
-env:                            # Static environment variables
+env:                            # Environment variables (supports ${placeholder} syntax)
   APP_ENV: development
   LOG_LEVEL: debug
-
-env_refs:                       # Dynamic environment variables
   DATABASE_URL: "postgres://postgres:postgres@${postgres.host}:${postgres.port}/${self.postgres.database}"
   REDIS_URL: "redis://${redis.host}:${redis.port}"
   USER_SERVICE_URL: "http://${user-service.host}:${user-service.port}"
@@ -308,7 +306,7 @@ localstack:
 
 ### Environment Variable Interpolation
 
-Use `${placeholder}` syntax in `env_refs` to reference infrastructure and services.
+Use `${placeholder}` syntax in `env` to reference infrastructure and services.
 
 <details>
 <summary>📋 Click to expand full placeholder reference</summary>

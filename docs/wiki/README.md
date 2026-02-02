@@ -87,7 +87,7 @@ requires:
         - name: orders
           dlq: true
 
-env_refs:
+env:
   DATABASE_URL: "postgres://postgres:postgres@${postgres.host}:${postgres.port}/${self.postgres.database}"
 ```
 
@@ -138,10 +138,10 @@ env_refs:
 
 ## Environment Variable Placeholders
 
-Dynamic values resolved at startup:
+Dynamic values resolved at startup. All values in `env` support `${placeholder}` syntax:
 
 ```yaml
-env_refs:
+env:
   # Infrastructure
   DATABASE_URL: "postgres://${postgres.host}:${postgres.port}/${self.postgres.database}"
   REDIS_URL: "redis://${redis.host}:${redis.port}"

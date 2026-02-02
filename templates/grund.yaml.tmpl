@@ -52,14 +52,10 @@ requires:
     #     - name: user-uploads
     #       seed: ./fixtures/s3/      # Optional: pre-populate files
 
-# Environment variables
-# These will be injected into the container
+# Environment variables (all values support ${placeholder} syntax)
 env:
   APP_ENV: development
   LOG_LEVEL: debug
-  
-# Environment variables with references (resolved by grund)
-env_refs:
   # DATABASE_URL: "postgres://postgres:postgres@${postgres.host}:${postgres.port}/${self.postgres.database}"
   # REDIS_URL: "redis://${redis.host}:${redis.port}"
   # SERVICE_B_URL: "http://${service-b.host}:${service-b.port}"

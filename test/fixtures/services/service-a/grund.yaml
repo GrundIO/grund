@@ -4,11 +4,11 @@ service:
   name: service-a
   type: go
   port: 8080
-  
+
   build:
     dockerfile: Dockerfile
     context: .
-    
+
   health:
     endpoint: /health
     interval: 5s
@@ -18,14 +18,14 @@ service:
 requires:
   services:
     - service-b
-    
+
   infrastructure:
     postgres:
       database: service_a_db
       migrations: ./migrations
-      
+
     redis: true
-    
+
     sqs:
       queues:
         - name: order-created-queue
@@ -35,8 +35,6 @@ requires:
 env:
   APP_ENV: development
   LOG_LEVEL: debug
-  
-env_refs:
   DATABASE_URL: "postgres://postgres:postgres@${postgres.host}:${postgres.port}/${self.postgres.database}"
   REDIS_URL: "redis://${redis.host}:${redis.port}"
   SERVICE_B_URL: "http://${service-b.host}:${service-b.port}"

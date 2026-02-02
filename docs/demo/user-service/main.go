@@ -21,8 +21,8 @@ type User struct {
 }
 
 var (
-	db    *sql.DB
-	rdb   *redis.Client
+	db  *sql.DB
+	rdb *redis.Client
 )
 
 func main() {
