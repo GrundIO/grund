@@ -4,9 +4,8 @@
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
-[![Go Report Card](https://img.shields.io/badge/Go%20Report-A-success?style=for-the-badge&logo=go)](https://goreportcard.com/report/github.com/GrundHQ/grund)
-[![GitHub Release](https://img.shields.io/github/v/release/GrundHQ/grund?style=for-the-badge&logo=github)](https://github.com/GrundHQ/grund/releases)
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/vivekkundariya)
+[![Go Report Card](https://img.shields.io/badge/Go%20Report-A-success?style=for-the-badge&logo=go)](https://goreportcard.com/report/github.com/Saturn-Fintech/grund)
+[![GitHub Release](https://img.shields.io/github/v/release/Saturn-Fintech/grund?style=for-the-badge&logo=github)](https://github.com/Saturn-Fintech/grund/releases)
 
 **Grund** is a CLI tool for local microservice development. One command spins up any service with all its dependencies—other services, databases, queues, and caches—in the correct order.
 
@@ -51,13 +50,13 @@ Grund automatically:
 ### Using Go Install
 
 ```bash
-go install github.com/GrundHQ/grund@latest
+go install github.com/Saturn-Fintech/grund@latest
 ```
 
 ### From Source
 
 ```bash
-git clone https://github.com/GrundHQ/grund.git
+git clone https://github.com/Saturn-Fintech/grund.git
 cd grund
 make install
 ```
@@ -477,6 +476,21 @@ Use `-v` flag for debug information:
 ```bash
 grund -v up my-service
 ```
+
+## Contributors
+
+Thanks to these wonderful people who have contributed to Grund:
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/vivekkundariya">
+        <img src="https://github.com/vivekkundariya.png" width="80px;" alt="Vivek Kundariya"/><br />
+        <sub><b>Vivek Kundariya</b></sub>
+      </a>
+    </td>
+  </tr>
+</table>
 
 ## License
 

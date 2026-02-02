@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/vivekkundariya/grund/internal/application/ports"
+	"github.com/Saturn-Fintech/grund/internal/application/ports"
 )
 
 // EnvironmentResolverImpl implements EnvironmentResolver

@@ -3,8 +3,8 @@ package queries
 import (
 	"context"
 
-	"github.com/vivekkundariya/grund/internal/application/ports"
-	"github.com/vivekkundariya/grund/internal/domain/service"
+	"github.com/Saturn-Fintech/grund/internal/application/ports"
+	"github.com/Saturn-Fintech/grund/internal/domain/service"
 )
 
 // StatusQuery represents a query for service status
