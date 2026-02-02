@@ -212,7 +212,7 @@ env_refs:
 | `grund status` | Show running services and their status |
 | `grund logs [service...]` | View service logs |
 | `grund restart <service>` | Restart a specific service |
-| `grund reset [-v]` | Stop services and optionally clean up volumes |
+| `grund reset [--volumes]` | Stop services and optionally clean up volumes |
 | `grund init` | Interactive setup wizard |
 | `grund config show [service]` | Show configuration and settings |
 | `grund service init` | Initialize `grund.yaml` in current directory |
@@ -389,7 +389,7 @@ flowchart TD
     J -->|Yes| K["Run: grund reset"]
 
     J -->|No| L{LocalStack<br/>issues?}
-    L -->|Yes| M["Run: grund reset -v"]
+    L -->|Yes| M["Run: grund reset --volumes"]
 
     L -->|No| N["Run: grund status"]
 
@@ -469,7 +469,7 @@ grund status
 
 If issues persist:
 ```bash
-grund reset -v
+grund reset --volumes
 grund up <service>
 ```
 

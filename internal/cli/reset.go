@@ -22,8 +22,8 @@ var resetCmd = &cobra.Command{
 
 Examples:
   grund reset              # Stop all services
-  grund reset -v           # Stop and remove volumes (database data)
-  grund reset -v --images  # Stop, remove volumes and images (full cleanup)`,
+  grund reset --volumes    # Stop and remove volumes (database data)
+  grund reset --volumes --images  # Stop, remove volumes and images (full cleanup)`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Discover compose files
 		fileSet, err := docker.DiscoverComposeFiles()
@@ -71,6 +71,6 @@ Examples:
 }
 
 func init() {
-	resetCmd.Flags().BoolVarP(&resetVolumes, "volumes", "v", false, "Remove named volumes (database data will be lost)")
+	resetCmd.Flags().BoolVar(&resetVolumes, "volumes", false, "Remove named volumes (database data will be lost)")
 	resetCmd.Flags().BoolVar(&resetImages, "images", false, "Remove locally built images")
 }
