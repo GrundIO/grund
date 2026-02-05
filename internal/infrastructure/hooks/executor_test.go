@@ -122,7 +122,7 @@ func TestHookExecutor_ExecuteAll_EmptyHooks(t *testing.T) {
 	}
 }
 
-func TestHookExecutor_ExecuteContainer_RequiresContainerName(t *testing.T) {
+func TestHookExecutor_ExecuteContainer_RequiresServiceName(t *testing.T) {
 	executor := NewHookExecutor()
 	hook := service.Hook{
 		Name:    "container hook",
@@ -132,14 +132,13 @@ func TestHookExecutor_ExecuteContainer_RequiresContainerName(t *testing.T) {
 	}
 
 	execCtx := ports.HookExecutionContext{
-		ServiceName:   "test-service",
-		ServicePath:   "/tmp",
-		ContainerName: "", // Empty container name
+		ServiceName: "", // Empty service name
+		ServicePath: "/tmp",
 	}
 
 	err := executor.Execute(context.Background(), hook, execCtx)
 	if err == nil {
-		t.Error("expected error when container name is empty")
+		t.Error("expected error when service name is empty")
 	}
 }
 

@@ -72,11 +72,13 @@ func (e *HookExecutor) executeHost(ctx context.Context, hook service.Hook, execC
 }
 
 func (e *HookExecutor) executeContainer(ctx context.Context, hook service.Hook, execCtx ports.HookExecutionContext) error {
-	if execCtx.ContainerName == "" {
-		return fmt.Errorf("container name required for container hook execution")
+	if execCtx.ServiceName == "" {
+		return fmt.Errorf("service name required for container hook execution")
 	}
 
-	cmd := exec.CommandContext(ctx, "docker", "exec", execCtx.ContainerName, "sh", "-c", hook.Command)
+	// Use docker compose exec with project name "grund" - this handles container naming automatically
+	// -T disables pseudo-TTY allocation for non-interactive use
+	cmd := exec.CommandContext(ctx, "docker", "compose", "-p", "grund", "exec", "-T", execCtx.ServiceName, "sh", "-c", hook.Command)
 
 	// Stream output to terminal
 	cmd.Stdout = os.Stdout
