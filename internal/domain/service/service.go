@@ -17,6 +17,7 @@ type Service struct {
 	Health       HealthConfig
 	Dependencies ServiceDependencies
 	Environment  Environment
+	Hooks        Hooks
 }
 
 // ServiceType represents the type of service
