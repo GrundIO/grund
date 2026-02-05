@@ -114,6 +114,7 @@ type ServiceInfoDTO struct {
 	Build  *BuildConfigDTO `yaml:"build,omitempty"`
 	Run    *RunConfigDTO   `yaml:"run,omitempty"`
 	Health HealthConfigDTO `yaml:"health"`
+	Hooks  *HooksDTO       `yaml:"hooks,omitempty"`
 }
 
 type BuildConfigDTO struct {
@@ -203,6 +204,24 @@ type S3ConfigDTO struct {
 type BucketConfigDTO struct {
 	Name string `yaml:"name"`
 	Seed string `yaml:"seed,omitempty"`
+}
+
+// HooksDTO is the DTO for hooks YAML serialization
+type HooksDTO struct {
+	PreUp              []HookDTO `yaml:"pre_up,omitempty"`
+	PostInfrastructure []HookDTO `yaml:"post_infrastructure,omitempty"`
+	PostUp             []HookDTO `yaml:"post_up,omitempty"`
+	PreDown            []HookDTO `yaml:"pre_down,omitempty"`
+	PostDown           []HookDTO `yaml:"post_down,omitempty"`
+}
+
+// HookDTO is the DTO for individual hook YAML serialization
+type HookDTO struct {
+	Name            string `yaml:"name"`
+	Command         string `yaml:"command"`
+	Target          string `yaml:"target"`                      // "host" or "container"
+	Timeout         string `yaml:"timeout,omitempty"`           // e.g., "30s", "5m"
+	ContinueOnError bool   `yaml:"continue_on_error,omitempty"` // default false
 }
 
 // toDomainService converts DTO to domain model
