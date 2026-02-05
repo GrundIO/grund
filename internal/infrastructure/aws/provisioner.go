@@ -45,12 +45,12 @@ func (p *LocalStackProvisioner) ProvisionRedis(ctx context.Context, config *infr
 }
 
 // ProvisionLocalStack provisions AWS resources in LocalStack
-func (p *LocalStackProvisioner) ProvisionLocalStack(ctx context.Context, req infrastructure.InfrastructureRequirements) error {
+func (p *LocalStackProvisioner) ProvisionLocalStack(ctx context.Context, req infrastructure.InfrastructureRequirements) (*ports.ProvisionedAWSResources, error) {
 	ui.Debug("Connecting to LocalStack at %s", p.endpoint)
 
 	cfg, err := createLocalStackConfig(p.endpoint)
 	if err != nil {
-		return fmt.Errorf("failed to create AWS config: %w", err)
+		return nil, fmt.Errorf("failed to create AWS config: %w", err)
 	}
 
 	sqsClient := sqs.NewFromConfig(cfg)
@@ -59,25 +59,43 @@ func (p *LocalStackProvisioner) ProvisionLocalStack(ctx context.Context, req inf
 		o.UsePathStyle = true // Required for LocalStack and bucket names with dots
 	})
 
+	// Initialize result with provisioned resource details
+	result := &ports.ProvisionedAWSResources{
+		SQS: make(map[string]ports.ProvisionedQueue),
+		SNS: make(map[string]ports.ProvisionedTopic),
+		S3:  make(map[string]ports.ProvisionedBucket),
+	}
+
 	queueArns := make(map[string]string)
 
 	// Create SQS Queues
 	if req.SQS != nil {
 		for _, queue := range req.SQS.Queues {
+			var dlqURL, dlqARN string
+
 			if queue.DLQ {
 				dlqName := queue.Name + "-dlq"
 				if existingURL, exists := getExistingQueueURL(ctx, sqsClient, dlqName); exists {
 					ui.Infof("SQS DLQ already exists: %s", dlqName)
-					_ = existingURL // DLQ URL not needed for ARN tracking
+					dlqURL = existingURL
 				} else {
 					ui.SubStep("Creating SQS DLQ: %s", dlqName)
-					_, err := sqsClient.CreateQueue(ctx, &sqs.CreateQueueInput{
+					dlqResult, err := sqsClient.CreateQueue(ctx, &sqs.CreateQueueInput{
 						QueueName: aws.String(dlqName),
 					})
 					if err != nil {
-						return fmt.Errorf("failed to create DLQ %s: %w", dlqName, err)
+						return nil, fmt.Errorf("failed to create DLQ %s: %w", dlqName, err)
 					}
+					dlqURL = *dlqResult.QueueUrl
 					ui.Successf("Created SQS DLQ: %s", dlqName)
+				}
+				// Get DLQ ARN
+				dlqAttrs, _ := sqsClient.GetQueueAttributes(ctx, &sqs.GetQueueAttributesInput{
+					QueueUrl:       aws.String(dlqURL),
+					AttributeNames: []types.QueueAttributeName{types.QueueAttributeNameQueueArn},
+				})
+				if dlqAttrs != nil && dlqAttrs.Attributes != nil {
+					dlqARN = dlqAttrs.Attributes["QueueArn"]
 				}
 			}
 
@@ -87,23 +105,34 @@ func (p *LocalStackProvisioner) ProvisionLocalStack(ctx context.Context, req inf
 				queueURL = existingURL
 			} else {
 				ui.SubStep("Creating SQS queue: %s", queue.Name)
-				result, err := sqsClient.CreateQueue(ctx, &sqs.CreateQueueInput{
+				createResult, err := sqsClient.CreateQueue(ctx, &sqs.CreateQueueInput{
 					QueueName: aws.String(queue.Name),
 				})
 				if err != nil {
-					return fmt.Errorf("failed to create queue %s: %w", queue.Name, err)
+					return nil, fmt.Errorf("failed to create queue %s: %w", queue.Name, err)
 				}
-				queueURL = *result.QueueUrl
+				queueURL = *createResult.QueueUrl
 				ui.Successf("Created SQS queue: %s", queue.Name)
 			}
 
-			// Get queue ARN for SNS subscription
+			// Get queue ARN
+			var queueARN string
 			attrs, _ := sqsClient.GetQueueAttributes(ctx, &sqs.GetQueueAttributesInput{
 				QueueUrl:       aws.String(queueURL),
 				AttributeNames: []types.QueueAttributeName{types.QueueAttributeNameQueueArn},
 			})
-			if attrs.Attributes != nil {
-				queueArns[queue.Name] = attrs.Attributes["QueueArn"]
+			if attrs != nil && attrs.Attributes != nil {
+				queueARN = attrs.Attributes["QueueArn"]
+				queueArns[queue.Name] = queueARN
+			}
+
+			// Store provisioned queue details
+			result.SQS[queue.Name] = ports.ProvisionedQueue{
+				Name:   queue.Name,
+				URL:    queueURL,
+				ARN:    queueARN,
+				DLQURL: dlqURL,
+				DLQARN: dlqARN,
 			}
 		}
 	}
@@ -135,9 +164,15 @@ func (p *LocalStackProvisioner) ProvisionLocalStack(ctx context.Context, req inf
 				Name: aws.String(topic.Name),
 			})
 			if err != nil {
-				return fmt.Errorf("failed to create topic %s: %w", topic.Name, err)
+				return nil, fmt.Errorf("failed to create topic %s: %w", topic.Name, err)
 			}
 			ui.Successf("SNS topic ready: %s", topic.Name)
+
+			// Store provisioned topic details
+			result.SNS[topic.Name] = ports.ProvisionedTopic{
+				Name: topic.Name,
+				ARN:  *topicResult.TopicArn,
+			}
 
 			// Subscribe endpoints to topic
 			for _, sub := range topic.Subscriptions {
@@ -147,7 +182,7 @@ func (p *LocalStackProvisioner) ProvisionLocalStack(ctx context.Context, req inf
 					envContext,
 				)
 				if err != nil {
-					return fmt.Errorf("failed to resolve endpoint %s: %w", sub.Endpoint, err)
+					return nil, fmt.Errorf("failed to resolve endpoint %s: %w", sub.Endpoint, err)
 				}
 				endpoint := resolved["endpoint"]
 
@@ -158,7 +193,7 @@ func (p *LocalStackProvisioner) ProvisionLocalStack(ctx context.Context, req inf
 					Endpoint: aws.String(endpoint),
 				})
 				if err != nil {
-					return fmt.Errorf("failed to subscribe %s to %s: %w", endpoint, topic.Name, err)
+					return nil, fmt.Errorf("failed to subscribe %s to %s: %w", endpoint, topic.Name, err)
 				}
 
 				// Set subscription attributes (FilterPolicy, FilterPolicyScope, etc.)
@@ -170,7 +205,7 @@ func (p *LocalStackProvisioner) ProvisionLocalStack(ctx context.Context, req inf
 						AttributeValue:  aws.String(attrValue),
 					})
 					if err != nil {
-						return fmt.Errorf("failed to set attribute %s on subscription: %w", attrName, err)
+						return nil, fmt.Errorf("failed to set attribute %s on subscription: %w", attrName, err)
 					}
 				}
 			}
@@ -188,14 +223,20 @@ func (p *LocalStackProvisioner) ProvisionLocalStack(ctx context.Context, req inf
 					Bucket: aws.String(bucket.Name),
 				})
 				if err != nil {
-					return fmt.Errorf("failed to create bucket %s: %w", bucket.Name, err)
+					return nil, fmt.Errorf("failed to create bucket %s: %w", bucket.Name, err)
 				}
 				ui.Successf("Created S3 bucket: %s", bucket.Name)
+			}
+
+			// Store provisioned bucket details (use path-style URL for LocalStack)
+			result.S3[bucket.Name] = ports.ProvisionedBucket{
+				Name: bucket.Name,
+				URL:  fmt.Sprintf("%s/%s", p.endpoint, bucket.Name),
 			}
 		}
 	}
 
-	return nil
+	return result, nil
 }
 
 // getExistingQueueURL checks if a queue already exists and returns its URL

@@ -128,7 +128,7 @@ type MockInfrastructureProvisioner struct {
 	ProvisionPostgresFunc   func(ctx context.Context, config *infrastructure.PostgresConfig) error
 	ProvisionMongoDBFunc    func(ctx context.Context, config *infrastructure.MongoDBConfig) error
 	ProvisionRedisFunc      func(ctx context.Context, config *infrastructure.RedisConfig) error
-	ProvisionLocalStackFunc func(ctx context.Context, req infrastructure.InfrastructureRequirements) error
+	ProvisionLocalStackFunc func(ctx context.Context, req infrastructure.InfrastructureRequirements) (*ports.ProvisionedAWSResources, error)
 
 	// Track calls
 	ProvisionPostgresCalls   []*infrastructure.PostgresConfig
@@ -161,17 +161,19 @@ func (m *MockInfrastructureProvisioner) ProvisionRedis(ctx context.Context, conf
 	return nil
 }
 
-func (m *MockInfrastructureProvisioner) ProvisionLocalStack(ctx context.Context, req infrastructure.InfrastructureRequirements) error {
+func (m *MockInfrastructureProvisioner) ProvisionLocalStack(ctx context.Context, req infrastructure.InfrastructureRequirements) (*ports.ProvisionedAWSResources, error) {
 	m.ProvisionLocalStackCalls = append(m.ProvisionLocalStackCalls, req)
 	if m.ProvisionLocalStackFunc != nil {
 		return m.ProvisionLocalStackFunc(ctx, req)
 	}
-	return nil
+	return nil, nil
 }
 
 // MockComposeGenerator is a mock implementation of ports.ComposeGenerator
 type MockComposeGenerator struct {
-	GenerateFunc func(services []*service.Service, infra infrastructure.InfrastructureRequirements) (string, error)
+	GenerateFunc             func(services []*service.Service, infra infrastructure.InfrastructureRequirements) (*ports.ComposeFileSet, error)
+	GenerateWithTunnelsFunc  func(services []*service.Service, infra infrastructure.InfrastructureRequirements, tunnelCtx map[string]ports.TunnelContext) (*ports.ComposeFileSet, error)
+	GenerateWithAWSResourcesFunc func(services []*service.Service, infra infrastructure.InfrastructureRequirements, tunnelCtx map[string]ports.TunnelContext, awsResources *ports.ProvisionedAWSResources) (*ports.ComposeFileSet, error)
 
 	// Track calls
 	GenerateCalls []struct {
@@ -180,7 +182,7 @@ type MockComposeGenerator struct {
 	}
 }
 
-func (m *MockComposeGenerator) Generate(services []*service.Service, infra infrastructure.InfrastructureRequirements) (string, error) {
+func (m *MockComposeGenerator) Generate(services []*service.Service, infra infrastructure.InfrastructureRequirements) (*ports.ComposeFileSet, error) {
 	m.GenerateCalls = append(m.GenerateCalls, struct {
 		Services []*service.Service
 		Infra    infrastructure.InfrastructureRequirements
@@ -188,7 +190,30 @@ func (m *MockComposeGenerator) Generate(services []*service.Service, infra infra
 	if m.GenerateFunc != nil {
 		return m.GenerateFunc(services, infra)
 	}
-	return "/tmp/docker-compose.generated.yaml", nil
+	return &ports.ComposeFileSet{
+		InfrastructurePath: "/tmp/infrastructure/docker-compose.yaml",
+		ServicePaths:       make(map[string]string),
+	}, nil
+}
+
+func (m *MockComposeGenerator) GenerateWithTunnels(services []*service.Service, infra infrastructure.InfrastructureRequirements, tunnelCtx map[string]ports.TunnelContext) (*ports.ComposeFileSet, error) {
+	if m.GenerateWithTunnelsFunc != nil {
+		return m.GenerateWithTunnelsFunc(services, infra, tunnelCtx)
+	}
+	return &ports.ComposeFileSet{
+		InfrastructurePath: "/tmp/infrastructure/docker-compose.yaml",
+		ServicePaths:       make(map[string]string),
+	}, nil
+}
+
+func (m *MockComposeGenerator) GenerateWithAWSResources(services []*service.Service, infra infrastructure.InfrastructureRequirements, tunnelCtx map[string]ports.TunnelContext, awsResources *ports.ProvisionedAWSResources) (*ports.ComposeFileSet, error) {
+	if m.GenerateWithAWSResourcesFunc != nil {
+		return m.GenerateWithAWSResourcesFunc(services, infra, tunnelCtx, awsResources)
+	}
+	return &ports.ComposeFileSet{
+		InfrastructurePath: "/tmp/infrastructure/docker-compose.yaml",
+		ServicePaths:       make(map[string]string),
+	}, nil
 }
 
 // MockHealthChecker is a mock implementation of ports.HealthChecker

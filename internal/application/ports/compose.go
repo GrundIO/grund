@@ -28,6 +28,8 @@ type ComposeGenerator interface {
 	Generate(services []*service.Service, infra infrastructure.InfrastructureRequirements) (*ComposeFileSet, error)
 	// GenerateWithTunnels generates compose with tunnel context for env resolution
 	GenerateWithTunnels(services []*service.Service, infra infrastructure.InfrastructureRequirements, tunnelCtx map[string]TunnelContext) (*ComposeFileSet, error)
+	// GenerateWithAWSResources generates compose with actual AWS resource URLs/ARNs from LocalStack
+	GenerateWithAWSResources(services []*service.Service, infra infrastructure.InfrastructureRequirements, tunnelCtx map[string]TunnelContext, awsResources *ProvisionedAWSResources) (*ComposeFileSet, error)
 }
 
 // EnvironmentResolver defines the interface for environment variable resolution

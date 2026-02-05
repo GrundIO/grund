@@ -86,12 +86,12 @@ func (c *CompositeInfrastructureProvisioner) ProvisionRedis(ctx context.Context,
 }
 
 // ProvisionLocalStack delegates to LocalStack provisioner
-func (c *CompositeInfrastructureProvisioner) ProvisionLocalStack(ctx context.Context, req infrastructure.InfrastructureRequirements) error {
+func (c *CompositeInfrastructureProvisioner) ProvisionLocalStack(ctx context.Context, req infrastructure.InfrastructureRequirements) (*ports.ProvisionedAWSResources, error) {
 	var lastErr error
 	for _, p := range c.provisioners {
-		err := p.ProvisionLocalStack(ctx, req)
+		result, err := p.ProvisionLocalStack(ctx, req)
 		if err == nil {
-			return nil
+			return result, nil
 		}
 		if isNotSupportedError(err) {
 			continue
@@ -99,9 +99,9 @@ func (c *CompositeInfrastructureProvisioner) ProvisionLocalStack(ctx context.Con
 		lastErr = err
 	}
 	if lastErr != nil {
-		return fmt.Errorf("localstack provisioning failed: %w", lastErr)
+		return nil, fmt.Errorf("localstack provisioning failed: %w", lastErr)
 	}
-	return fmt.Errorf("no provisioner supports localstack")
+	return nil, fmt.Errorf("no provisioner supports localstack")
 }
 
 // isNotSupportedError checks if an error indicates the provisioner doesn't support this type

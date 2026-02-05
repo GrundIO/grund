@@ -244,6 +244,44 @@ func (g *ComposeGeneratorImpl) GenerateWithTunnels(services []*service.Service, 
 	return fileSet, nil
 }
 
+// GenerateWithAWSResources generates compose files with actual AWS resource URLs/ARNs from LocalStack
+// This is called after provisioning to update service configs with real URLs instead of hardcoded ones
+func (g *ComposeGeneratorImpl) GenerateWithAWSResources(services []*service.Service, infra infrastructure.InfrastructureRequirements, tunnelCtx map[string]ports.TunnelContext, awsResources *ports.ProvisionedAWSResources) (*ports.ComposeFileSet, error) {
+	fileSet := &ports.ComposeFileSet{
+		ServicePaths: make(map[string]string),
+	}
+
+	// Discover existing compose files
+	g.discoverExistingComposeFiles(fileSet)
+
+	// Build environment context with actual AWS resource URLs
+	envContext := g.buildEnvironmentContextWithAWSResources(services, infra, awsResources)
+
+	// Inject tunnel context
+	if tunnelCtx != nil {
+		for name, tc := range tunnelCtx {
+			envContext.Tunnel[name] = tc
+		}
+	}
+
+	// Create port allocator
+	portAlloc := newPortAllocator()
+
+	// Don't regenerate infrastructure - only regenerate service compose files
+	// Infrastructure compose file stays the same
+
+	// Generate per-service compose files with real AWS URLs
+	for _, svc := range services {
+		svcPath, err := g.generateService(svc, envContext, portAlloc)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate compose for %s: %w", svc.Name, err)
+		}
+		fileSet.ServicePaths[svc.Name] = svcPath
+	}
+
+	return fileSet, nil
+}
+
 // discoverExistingComposeFiles scans tmpDir for existing compose files
 func (g *ComposeGeneratorImpl) discoverExistingComposeFiles(fileSet *ports.ComposeFileSet) {
 	// Check if tmp directory exists
@@ -519,7 +557,7 @@ func (g *ComposeGeneratorImpl) buildEnvironmentContext(services []*service.Servi
 		}
 	}
 
-	// Add SQS queue contexts
+	// Add SQS queue contexts (with placeholder URLs - will be updated after provisioning)
 	if infra.SQS != nil {
 		for _, queue := range infra.SQS.Queues {
 			ctx.SQS[queue.Name] = ports.QueueContext{
@@ -531,7 +569,7 @@ func (g *ComposeGeneratorImpl) buildEnvironmentContext(services []*service.Servi
 		}
 	}
 
-	// Add SNS topic contexts
+	// Add SNS topic contexts (with placeholder ARNs - will be updated after provisioning)
 	if infra.SNS != nil {
 		for _, topic := range infra.SNS.Topics {
 			ctx.SNS[topic.Name] = ports.TopicContext{
@@ -555,6 +593,83 @@ func (g *ComposeGeneratorImpl) buildEnvironmentContext(services []*service.Servi
 	for _, svc := range services {
 		ctx.Services[svc.Name] = ports.ServiceContext{
 			Host: svc.Name, // Container name in Docker network
+			Port: svc.Port.Value(),
+			Config: map[string]any{
+				"postgres.database": getServicePostgresDB(svc),
+				"mongodb.database":  getServiceMongoDB(svc),
+			},
+		}
+	}
+
+	return ctx
+}
+
+// buildEnvironmentContextWithAWSResources builds environment context using actual AWS resource URLs/ARNs
+func (g *ComposeGeneratorImpl) buildEnvironmentContextWithAWSResources(services []*service.Service, infra infrastructure.InfrastructureRequirements, awsResources *ports.ProvisionedAWSResources) ports.EnvironmentContext {
+	ctx := ports.NewDefaultEnvironmentContext()
+
+	// Add infrastructure contexts
+	if infra.Postgres != nil {
+		ctx.Infrastructure["postgres"] = ports.InfrastructureContext{
+			Host:     "postgres",
+			Port:     5432,
+			Database: infra.Postgres.Database,
+			Username: "postgres",
+			Password: "postgres",
+		}
+	}
+
+	if infra.MongoDB != nil {
+		ctx.Infrastructure["mongodb"] = ports.InfrastructureContext{
+			Host:     "mongodb",
+			Port:     27017,
+			Database: infra.MongoDB.Database,
+		}
+	}
+
+	if infra.Redis != nil {
+		ctx.Infrastructure["redis"] = ports.InfrastructureContext{
+			Host: "redis",
+			Port: 6379,
+		}
+	}
+
+	// Add SQS queue contexts with ACTUAL URLs from LocalStack
+	if awsResources != nil && awsResources.SQS != nil {
+		for name, queue := range awsResources.SQS {
+			ctx.SQS[name] = ports.QueueContext{
+				Name: queue.Name,
+				URL:  queue.URL,
+				ARN:  queue.ARN,
+				DLQ:  queue.DLQURL,
+			}
+		}
+	}
+
+	// Add SNS topic contexts with ACTUAL ARNs from LocalStack
+	if awsResources != nil && awsResources.SNS != nil {
+		for name, topic := range awsResources.SNS {
+			ctx.SNS[name] = ports.TopicContext{
+				Name: topic.Name,
+				ARN:  topic.ARN,
+			}
+		}
+	}
+
+	// Add S3 bucket contexts with ACTUAL URLs from LocalStack
+	if awsResources != nil && awsResources.S3 != nil {
+		for name, bucket := range awsResources.S3 {
+			ctx.S3[name] = ports.BucketContext{
+				Name: bucket.Name,
+				URL:  bucket.URL,
+			}
+		}
+	}
+
+	// Add service contexts
+	for _, svc := range services {
+		ctx.Services[svc.Name] = ports.ServiceContext{
+			Host: svc.Name,
 			Port: svc.Port.Value(),
 			Config: map[string]any{
 				"postgres.database": getServicePostgresDB(svc),
