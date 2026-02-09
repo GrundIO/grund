@@ -13,6 +13,15 @@ Quick reference for all Grund CLI commands.
 | Force rebuild containers | `grund up <service> --build` |
 | Verbose output | `grund up <service> -v` |
 
+## Syncing Repositories
+
+| Task | Command |
+|------|---------|
+| Sync all service repos (clone + pull) | `grund sync` |
+| Sync specific services | `grund sync service1 service2` |
+| Only clone missing (skip pull) | `grund sync --no-pull` |
+| Clone specific service only | `grund sync service1 --no-pull` |
+
 ## Stopping Services
 
 | Task | Command |
@@ -76,10 +85,12 @@ Quick reference for all Grund CLI commands.
 ### First-time setup
 ```bash
 grund init                    # Interactive wizard
+grund sync                    # Clone all service repos
 ```
 
 ### Daily development
 ```bash
+grund sync                    # Pull latest for all repos
 grund up my-service           # Start working
 grund logs my-service -f      # Watch logs
 grund restart my-service      # After code changes
