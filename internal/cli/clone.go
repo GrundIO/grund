@@ -71,10 +71,12 @@ func renderCloneResults(results []ports.CloneResult) error {
 			statusIcon = "●"
 			statusColor = text.FgGreen
 			statusText = "cloned"
+			comment = "-"
 		case "pulled":
 			statusIcon = "●"
 			statusColor = text.FgCyan
 			statusText = "pulled"
+			comment = "-"
 		case "skipped":
 			statusIcon = "○"
 			statusColor = text.FgYellow
