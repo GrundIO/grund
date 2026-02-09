@@ -171,8 +171,8 @@ func (m *MockInfrastructureProvisioner) ProvisionLocalStack(ctx context.Context,
 
 // MockComposeGenerator is a mock implementation of ports.ComposeGenerator
 type MockComposeGenerator struct {
-	GenerateFunc             func(services []*service.Service, infra infrastructure.InfrastructureRequirements) (*ports.ComposeFileSet, error)
-	GenerateWithTunnelsFunc  func(services []*service.Service, infra infrastructure.InfrastructureRequirements, tunnelCtx map[string]ports.TunnelContext) (*ports.ComposeFileSet, error)
+	GenerateFunc                 func(services []*service.Service, infra infrastructure.InfrastructureRequirements) (*ports.ComposeFileSet, error)
+	GenerateWithTunnelsFunc      func(services []*service.Service, infra infrastructure.InfrastructureRequirements, tunnelCtx map[string]ports.TunnelContext) (*ports.ComposeFileSet, error)
 	GenerateWithAWSResourcesFunc func(services []*service.Service, infra infrastructure.InfrastructureRequirements, tunnelCtx map[string]ports.TunnelContext, awsResources *ports.ProvisionedAWSResources) (*ports.ComposeFileSet, error)
 
 	// Track calls

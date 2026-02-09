@@ -44,8 +44,8 @@ type InfrastructureProvisioner interface {
 
 // ProvisionedAWSResources contains the actual resource details from LocalStack
 type ProvisionedAWSResources struct {
-	SQS map[string]ProvisionedQueue // queue name -> details
-	SNS map[string]ProvisionedTopic // topic name -> details
+	SQS map[string]ProvisionedQueue  // queue name -> details
+	SNS map[string]ProvisionedTopic  // topic name -> details
 	S3  map[string]ProvisionedBucket // bucket name -> details
 }
 
