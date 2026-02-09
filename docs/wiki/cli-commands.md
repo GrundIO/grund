@@ -100,6 +100,67 @@ grund up s3-upload-service
 
 ---
 
+### `grund clone`
+
+Clone service repositories defined in services.yaml.
+
+```bash
+grund clone [services...] [flags]
+```
+
+**Arguments:**
+- `services` (optional): One or more service names to clone. If omitted, clones all services that have a `repo` field.
+
+**Flags:**
+| Flag | Description |
+|------|-------------|
+| `--sync` | Pull latest changes for already cloned repositories |
+
+**What it does:**
+1. Reads all service entries from `services.yaml`
+2. Filters to requested services (or all with a `repo` field)
+3. For each service:
+   - **Path doesn't exist** → runs `git clone`
+   - **Path exists + is git repo + no `--sync`** → skips
+   - **Path exists + is git repo + `--sync`** → runs `git pull`
+   - **Path exists + NOT a git repo** → reports error
+4. Prints a summary of cloned, pulled, skipped, and errored services
+
+**Examples:**
+```bash
+# Clone all service repositories
+grund clone
+
+# Clone specific services
+grund clone user-service order-service
+
+# Clone missing repos + pull existing ones
+grund clone --sync
+
+# Pull latest for a specific service
+grund clone user-service --sync
+```
+
+**Sample output:**
+```
+[INFO] Cloning 3 service(s)...
+  → user-service: cloning git@github.com:company/user-service.git...
+  → order-service: already cloned, skipping (use --sync to pull)
+  → notification-service: cloning git@github.com:company/notification-service.git...
+
+[INFO] Summary:
+  [OK] user-service: cloned to /Users/dev/projects/user-service
+  → order-service: skipped (already exists)
+  [OK] notification-service: cloned to /Users/dev/projects/notification-service
+
+[INFO] Cloned: 2, Pulled: 0, Skipped: 1, Errors: 0
+```
+
+> [!TIP]
+> Run `grund clone` after `grund init` to set up all service repositories in one command.
+
+---
+
 ### `grund down`
 
 Stop all running services and infrastructure.
