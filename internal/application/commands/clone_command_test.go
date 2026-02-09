@@ -70,13 +70,18 @@ func TestCloneCommandHandler_CloneAll(t *testing.T) {
 
 	cmd := CloneCommand{} // no service names = all
 
-	err := handler.Handle(context.Background(), cmd)
+	results, err := handler.Handle(context.Background(), cmd)
 	if err != nil {
 		t.Fatalf("Handle() returned error: %v", err)
 	}
 
 	if len(gitClient.cloneCalls) != 2 {
 		t.Errorf("Expected 2 clone calls, got %d", len(gitClient.cloneCalls))
+	}
+
+	cloned := countResultsByAction(results, "cloned")
+	if cloned != 2 {
+		t.Errorf("Expected 2 cloned results, got %d", cloned)
 	}
 }
 
@@ -92,7 +97,7 @@ func TestCloneCommandHandler_CloneSpecific(t *testing.T) {
 
 	cmd := CloneCommand{ServiceNames: []string{"svc-a"}}
 
-	err := handler.Handle(context.Background(), cmd)
+	results, err := handler.Handle(context.Background(), cmd)
 	if err != nil {
 		t.Fatalf("Handle() returned error: %v", err)
 	}
@@ -102,6 +107,9 @@ func TestCloneCommandHandler_CloneSpecific(t *testing.T) {
 	}
 	if gitClient.cloneCalls[0].RepoURL != "git@github.com:org/svc-a.git" {
 		t.Errorf("Expected svc-a repo URL, got %s", gitClient.cloneCalls[0].RepoURL)
+	}
+	if len(results) != 1 || results[0].Action != "cloned" {
+		t.Errorf("Expected 1 cloned result, got %v", results)
 	}
 }
 
@@ -118,7 +126,7 @@ func TestCloneCommandHandler_SkipExistingNoSync(t *testing.T) {
 
 	cmd := CloneCommand{Sync: false}
 
-	err := handler.Handle(context.Background(), cmd)
+	results, err := handler.Handle(context.Background(), cmd)
 	if err != nil {
 		t.Fatalf("Handle() returned error: %v", err)
 	}
@@ -128,6 +136,9 @@ func TestCloneCommandHandler_SkipExistingNoSync(t *testing.T) {
 	}
 	if len(gitClient.pullCalls) != 0 {
 		t.Errorf("Expected 0 pull calls, got %d", len(gitClient.pullCalls))
+	}
+	if countResultsByAction(results, "skipped") != 1 {
+		t.Errorf("Expected 1 skipped result, got %v", results)
 	}
 }
 
@@ -144,7 +155,7 @@ func TestCloneCommandHandler_SyncExisting(t *testing.T) {
 
 	cmd := CloneCommand{Sync: true}
 
-	err := handler.Handle(context.Background(), cmd)
+	results, err := handler.Handle(context.Background(), cmd)
 	if err != nil {
 		t.Fatalf("Handle() returned error: %v", err)
 	}
@@ -154,6 +165,9 @@ func TestCloneCommandHandler_SyncExisting(t *testing.T) {
 	}
 	if len(gitClient.pullCalls) != 1 {
 		t.Errorf("Expected 1 pull call, got %d", len(gitClient.pullCalls))
+	}
+	if countResultsByAction(results, "pulled") != 1 {
+		t.Errorf("Expected 1 pulled result, got %v", results)
 	}
 }
 
@@ -170,9 +184,16 @@ func TestCloneCommandHandler_ExistsButNotGitRepo(t *testing.T) {
 
 	cmd := CloneCommand{}
 
-	err := handler.Handle(context.Background(), cmd)
-	if err == nil {
-		t.Fatal("Expected error when path exists but is not a git repo, got nil")
+	results, err := handler.Handle(context.Background(), cmd)
+	if err != nil {
+		t.Fatalf("Handle() returned unexpected error: %v", err)
+	}
+
+	if countResultsByAction(results, "error") != 1 {
+		t.Errorf("Expected 1 error result, got %v", results)
+	}
+	if results[0].Error == nil {
+		t.Error("Expected error in result for non-git directory")
 	}
 }
 
@@ -187,7 +208,7 @@ func TestCloneCommandHandler_ServiceNotFound(t *testing.T) {
 
 	cmd := CloneCommand{ServiceNames: []string{"nonexistent"}}
 
-	err := handler.Handle(context.Background(), cmd)
+	_, err := handler.Handle(context.Background(), cmd)
 	if err == nil {
 		t.Fatal("Expected error for nonexistent service, got nil")
 	}
@@ -204,7 +225,7 @@ func TestCloneCommandHandler_NoRepoField(t *testing.T) {
 
 	cmd := CloneCommand{ServiceNames: []string{"svc-a"}}
 
-	err := handler.Handle(context.Background(), cmd)
+	_, err := handler.Handle(context.Background(), cmd)
 	if err == nil {
 		t.Fatal("Expected error for service with no repo, got nil")
 	}
@@ -221,7 +242,7 @@ func TestCloneCommandHandler_NoPathField(t *testing.T) {
 
 	cmd := CloneCommand{ServiceNames: []string{"svc-a"}}
 
-	err := handler.Handle(context.Background(), cmd)
+	_, err := handler.Handle(context.Background(), cmd)
 	if err == nil {
 		t.Fatal("Expected error for service with no path, got nil")
 	}
@@ -241,9 +262,14 @@ func TestCloneCommandHandler_PartialFailure(t *testing.T) {
 
 	cmd := CloneCommand{}
 
-	err := handler.Handle(context.Background(), cmd)
-	if err == nil {
-		t.Fatal("Expected error on partial failure, got nil")
+	results, err := handler.Handle(context.Background(), cmd)
+	if err != nil {
+		t.Fatalf("Handle() returned unexpected error: %v", err)
+	}
+
+	errorCount := countResultsByAction(results, "error")
+	if errorCount != 2 {
+		t.Errorf("Expected 2 error results, got %d", errorCount)
 	}
 }
 
@@ -256,7 +282,7 @@ func TestCloneCommandHandler_RegistryError(t *testing.T) {
 
 	cmd := CloneCommand{}
 
-	err := handler.Handle(context.Background(), cmd)
+	_, err := handler.Handle(context.Background(), cmd)
 	if err == nil {
 		t.Fatal("Expected error from registry failure, got nil")
 	}
@@ -274,11 +300,14 @@ func TestCloneCommandHandler_NoServicesWithRepo(t *testing.T) {
 	// Clone all — but none have repo
 	cmd := CloneCommand{}
 
-	err := handler.Handle(context.Background(), cmd)
+	results, err := handler.Handle(context.Background(), cmd)
 	if err != nil {
 		t.Fatalf("Handle() returned error: %v", err)
 	}
 
+	if len(results) != 0 {
+		t.Errorf("Expected 0 results, got %d", len(results))
+	}
 	if len(gitClient.cloneCalls) != 0 {
 		t.Errorf("Expected 0 clone calls, got %d", len(gitClient.cloneCalls))
 	}
@@ -298,9 +327,13 @@ func TestCloneCommandHandler_PullError(t *testing.T) {
 
 	cmd := CloneCommand{Sync: true}
 
-	err := handler.Handle(context.Background(), cmd)
-	if err == nil {
-		t.Fatal("Expected error on pull failure, got nil")
+	results, err := handler.Handle(context.Background(), cmd)
+	if err != nil {
+		t.Fatalf("Handle() returned unexpected error: %v", err)
+	}
+
+	if countResultsByAction(results, "error") != 1 {
+		t.Errorf("Expected 1 error result, got %v", results)
 	}
 }
 
@@ -316,4 +349,15 @@ func TestExpandTilde(t *testing.T) {
 	if result != "" {
 		t.Errorf("Expected empty string, got %s", result)
 	}
+}
+
+// countResultsByAction counts results with the given action
+func countResultsByAction(results []ports.CloneResult, action string) int {
+	count := 0
+	for _, r := range results {
+		if r.Action == action {
+			count++
+		}
+	}
+	return count
 }

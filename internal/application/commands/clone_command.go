@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/Saturn-Fintech/grund/internal/application/ports"
 	"github.com/Saturn-Fintech/grund/internal/domain/service"
@@ -35,22 +34,22 @@ func NewCloneCommandHandler(
 	}
 }
 
-// Handle executes the clone command
-func (h *CloneCommandHandler) Handle(ctx context.Context, cmd CloneCommand) error {
+// Handle executes the clone command and returns results for display
+func (h *CloneCommandHandler) Handle(ctx context.Context, cmd CloneCommand) ([]ports.CloneResult, error) {
 	allServices, err := h.registryRepo.GetAllServices()
 	if err != nil {
-		return fmt.Errorf("failed to get services from registry: %w", err)
+		return nil, fmt.Errorf("failed to get services from registry: %w", err)
 	}
 
 	// Build the list of services to process
 	targets, err := h.resolveTargets(allServices, cmd.ServiceNames)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if len(targets) == 0 {
 		ui.Infof("No services with repo field found")
-		return nil
+		return nil, nil
 	}
 
 	ui.Infof("Cloning %d service(s)...", len(targets))
@@ -62,8 +61,7 @@ func (h *CloneCommandHandler) Handle(ctx context.Context, cmd CloneCommand) erro
 		results = append(results, result)
 	}
 
-	// Print summary and collect errors
-	return h.printSummary(results)
+	return results, nil
 }
 
 // resolveTargets filters services to the requested set (or all with repo field)
@@ -152,41 +150,6 @@ func (h *CloneCommandHandler) processService(
 	}
 	result.Action = "cloned"
 	return result
-}
-
-// printSummary prints results and returns an aggregate error if any failures occurred
-func (h *CloneCommandHandler) printSummary(results []ports.CloneResult) error {
-	var cloned, pulled, skipped, errored int
-	var errors []string
-
-	fmt.Println()
-	ui.Infof("Summary:")
-	for _, r := range results {
-		switch r.Action {
-		case "cloned":
-			cloned++
-			ui.Successf("  %s: cloned to %s", r.ServiceName, r.Path)
-		case "pulled":
-			pulled++
-			ui.Successf("  %s: pulled latest", r.ServiceName)
-		case "skipped":
-			skipped++
-			ui.Step("%s: skipped (already exists)", r.ServiceName)
-		default:
-			errored++
-			ui.Errorf("  %s: %v", r.ServiceName, r.Error)
-			errors = append(errors, fmt.Sprintf("%s: %v", r.ServiceName, r.Error))
-		}
-	}
-
-	fmt.Println()
-	ui.Infof("Cloned: %d, Pulled: %d, Skipped: %d, Errors: %d", cloned, pulled, skipped, errored)
-
-	if errored > 0 {
-		return fmt.Errorf("clone completed with %d error(s): %s", errored, strings.Join(errors, "; "))
-	}
-
-	return nil
 }
 
 // expandTilde expands ~ to the user's home directory
