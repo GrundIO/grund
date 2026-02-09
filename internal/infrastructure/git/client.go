@@ -39,7 +39,7 @@ func (c *Client) Clone(ctx context.Context, repoURL string, destPath string) err
 
 // Pull pulls the latest changes in the given git repository
 func (c *Client) Pull(ctx context.Context, repoPath string) error {
-	cmd := exec.CommandContext(ctx, "git", "-C", repoPath, "pull")
+	cmd := exec.CommandContext(ctx, "git", "-C", repoPath, "pull", "--ff-only")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
