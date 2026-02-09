@@ -12,6 +12,7 @@ import (
 	"github.com/Saturn-Fintech/grund/internal/infrastructure/config"
 	"github.com/Saturn-Fintech/grund/internal/infrastructure/docker"
 	"github.com/Saturn-Fintech/grund/internal/infrastructure/generator"
+	"github.com/Saturn-Fintech/grund/internal/infrastructure/git"
 	"github.com/Saturn-Fintech/grund/internal/infrastructure/hooks"
 	"github.com/Saturn-Fintech/grund/internal/infrastructure/tunnel"
 )
@@ -40,6 +41,7 @@ type Container struct {
 	UpCommandHandler      *commands.UpCommandHandler
 	DownCommandHandler    *commands.DownCommandHandler
 	RestartCommandHandler *commands.RestartCommandHandler
+	CloneCommandHandler   *commands.CloneCommandHandler
 
 	// Query Handlers
 	StatusQueryHandler *queries.StatusQueryHandler
@@ -136,6 +138,10 @@ func NewContainerWithConfig(orchestrationRoot, servicesPath string, configResolv
 	)
 	restartHandler := commands.NewRestartCommandHandler(orchestrator)
 
+	// Initialize git client and clone handler
+	gitClient := git.NewClient()
+	cloneHandler := commands.NewCloneCommandHandler(registryRepo, gitClient)
+
 	// Initialize query handlers
 	statusHandler := queries.NewStatusQueryHandler(orchestrator)
 	configHandler := queries.NewConfigQueryHandler(
@@ -159,6 +165,7 @@ func NewContainerWithConfig(orchestrationRoot, servicesPath string, configResolv
 		UpCommandHandler:      upHandler,
 		DownCommandHandler:    downHandler,
 		RestartCommandHandler: restartHandler,
+		CloneCommandHandler:   cloneHandler,
 		StatusQueryHandler:    statusHandler,
 		ConfigQueryHandler:    configHandler,
 	}, nil
