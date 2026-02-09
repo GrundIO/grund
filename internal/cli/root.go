@@ -39,7 +39,7 @@ Configuration:
   grund config show           View configuration
 
 Documentation: https://github.com/Saturn-Fintech/grund`,
-	Version: "0.3.0",
+	Version: "0.4.0",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		// Set verbose mode on logger
 		ui.SetVerbose(verbose)
