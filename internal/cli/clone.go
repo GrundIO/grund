@@ -55,7 +55,7 @@ func renderCloneResults(results []ports.CloneResult) error {
 	t.SetOutputMirror(os.Stdout)
 	t.SetStyle(table.StyleRounded)
 
-	t.AppendHeader(table.Row{"Service", "Status", "Path"})
+	t.AppendHeader(table.Row{"Service", "Status", "Path", "Comment"})
 
 	var errored int
 	var errors []string
@@ -64,6 +64,7 @@ func renderCloneResults(results []ports.CloneResult) error {
 		var statusIcon string
 		var statusColor text.Color
 		var statusText string
+		var comment string
 
 		switch r.Action {
 		case "cloned":
@@ -78,23 +79,23 @@ func renderCloneResults(results []ports.CloneResult) error {
 			statusIcon = "○"
 			statusColor = text.FgYellow
 			statusText = "skipped"
+			comment = "use --sync to pull"
 		default:
 			statusIcon = "●"
 			statusColor = text.FgRed
 			statusText = "error"
 			errored++
 			errors = append(errors, fmt.Sprintf("%s: %v", r.ServiceName, r.Error))
-		}
-
-		pathOrErr := r.Path
-		if r.Error != nil {
-			pathOrErr = r.Error.Error()
+			if r.Error != nil {
+				comment = text.FgRed.Sprint(r.Error.Error())
+			}
 		}
 
 		t.AppendRow(table.Row{
 			r.ServiceName,
 			statusColor.Sprintf("%s %s", statusIcon, statusText),
-			pathOrErr,
+			r.Path,
+			comment,
 		})
 	}
 

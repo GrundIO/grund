@@ -148,13 +148,13 @@ grund clone user-service --sync
   → order-service: already cloned, skipping (use --sync to pull)
   → notification-service: cloning git@github.com:company/notification-service.git...
 
-╭───────────────────────┬───────────┬──────────────────────────────────────────╮
-│ Service               │ Status    │ Path                                     │
-├───────────────────────┼───────────┼──────────────────────────────────────────┤
-│ user-service          │ ● cloned  │ /Users/dev/projects/user-service         │
-│ order-service         │ ○ skipped │ /Users/dev/projects/order-service        │
-│ notification-service  │ ● cloned  │ /Users/dev/projects/notification-service │
-╰───────────────────────┴───────────┴──────────────────────────────────────────╯
+╭──────────────────────┬───────────┬──────────────────────────────────────────┬────────────────────╮
+│ Service              │ Status    │ Path                                     │ Comment            │
+├──────────────────────┼───────────┼──────────────────────────────────────────┼────────────────────┤
+│ user-service         │ ● cloned  │ /Users/dev/projects/user-service         │                    │
+│ order-service        │ ○ skipped │ /Users/dev/projects/order-service        │ use --sync to pull │
+│ notification-service │ ● cloned  │ /Users/dev/projects/notification-service │                    │
+╰──────────────────────┴───────────┴──────────────────────────────────────────┴────────────────────╯
 
 [INFO] Cloned: 2, Pulled: 0, Skipped: 1, Errors: 0
 ```
