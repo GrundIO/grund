@@ -11,31 +11,31 @@ import (
 	"github.com/Saturn-Fintech/grund/internal/ui"
 )
 
-// CloneCommand represents the command to clone service repositories
-type CloneCommand struct {
+// SyncCommand represents the command to sync service repositories
+type SyncCommand struct {
 	ServiceNames []string // empty = all services with repo
-	Sync         bool     // --sync flag: pull existing repos
+	NoPull       bool     // --no-pull flag: skip pulling existing repos
 }
 
-// CloneCommandHandler handles the clone command
-type CloneCommandHandler struct {
+// SyncCommandHandler handles the sync command
+type SyncCommandHandler struct {
 	registryRepo ports.ServiceRegistryRepository
 	gitClient    ports.GitClient
 }
 
-// NewCloneCommandHandler creates a new clone command handler
-func NewCloneCommandHandler(
+// NewSyncCommandHandler creates a new sync command handler
+func NewSyncCommandHandler(
 	registryRepo ports.ServiceRegistryRepository,
 	gitClient ports.GitClient,
-) *CloneCommandHandler {
-	return &CloneCommandHandler{
+) *SyncCommandHandler {
+	return &SyncCommandHandler{
 		registryRepo: registryRepo,
 		gitClient:    gitClient,
 	}
 }
 
-// Handle executes the clone command and returns results for display
-func (h *CloneCommandHandler) Handle(ctx context.Context, cmd CloneCommand) ([]ports.CloneResult, error) {
+// Handle executes the sync command and returns results for display
+func (h *SyncCommandHandler) Handle(ctx context.Context, cmd SyncCommand) ([]ports.CloneResult, error) {
 	allServices, err := h.registryRepo.GetAllServices()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get services from registry: %w", err)
@@ -52,12 +52,12 @@ func (h *CloneCommandHandler) Handle(ctx context.Context, cmd CloneCommand) ([]p
 		return nil, nil
 	}
 
-	ui.Infof("Cloning %d service(s)...", len(targets))
+	ui.Infof("Syncing %d service(s)...", len(targets))
 
 	// Process each service
 	var results []ports.CloneResult
 	for name, entry := range targets {
-		result := h.processService(ctx, name, entry, cmd.Sync)
+		result := h.processService(ctx, name, entry, cmd.NoPull)
 		results = append(results, result)
 	}
 
@@ -65,7 +65,7 @@ func (h *CloneCommandHandler) Handle(ctx context.Context, cmd CloneCommand) ([]p
 }
 
 // resolveTargets filters services to the requested set (or all with repo field)
-func (h *CloneCommandHandler) resolveTargets(
+func (h *SyncCommandHandler) resolveTargets(
 	allServices map[service.ServiceName]ports.ServiceEntry,
 	requestedNames []string,
 ) (map[service.ServiceName]ports.ServiceEntry, error) {
@@ -101,11 +101,11 @@ func (h *CloneCommandHandler) resolveTargets(
 }
 
 // processService handles clone/pull/skip logic for a single service
-func (h *CloneCommandHandler) processService(
+func (h *SyncCommandHandler) processService(
 	ctx context.Context,
 	name service.ServiceName,
 	entry ports.ServiceEntry,
-	sync bool,
+	noPull bool,
 ) ports.CloneResult {
 	path := expandTilde(entry.Path)
 
@@ -124,13 +124,13 @@ func (h *CloneCommandHandler) processService(
 			return result
 		}
 
-		if !sync {
+		if noPull {
 			result.Action = "skipped"
-			ui.Step("%s: already cloned, skipping (use --sync to pull)", name)
+			ui.Step("%s: already cloned, skipping pull (--no-pull)", name)
 			return result
 		}
 
-		// --sync: pull
+		// Pull latest
 		ui.Step("%s: pulling latest...", name)
 		if err := h.gitClient.Pull(ctx, path); err != nil {
 			result.Action = "error"

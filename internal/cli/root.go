@@ -114,7 +114,7 @@ func init() {
 	rootCmd.AddCommand(logsCmd)
 	rootCmd.AddCommand(restartCmd)
 	rootCmd.AddCommand(resetCmd)
-	rootCmd.AddCommand(cloneCmd)
+	rootCmd.AddCommand(syncCmd)
 
 	// Service management
 	rootCmd.AddCommand(service.Cmd)

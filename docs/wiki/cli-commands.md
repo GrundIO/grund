@@ -100,67 +100,67 @@ grund up s3-upload-service
 
 ---
 
-### `grund clone`
+### `grund sync`
 
-Clone service repositories defined in services.yaml.
+Sync service repositories defined in services.yaml. Missing repos are cloned, existing repos are pulled to the latest.
 
 ```bash
-grund clone [services...] [flags]
+grund sync [services...] [flags]
 ```
 
 **Arguments:**
-- `services` (optional): One or more service names to clone. If omitted, clones all services that have a `repo` field.
+- `services` (optional): One or more service names to sync. If omitted, syncs all services that have a `repo` field.
 
 **Flags:**
 | Flag | Description |
 |------|-------------|
-| `--sync` | Pull latest changes for already cloned repositories |
+| `--no-pull` | Only clone missing repositories, skip pulling existing ones |
 
 **What it does:**
 1. Reads all service entries from `services.yaml`
 2. Filters to requested services (or all with a `repo` field)
 3. For each service:
    - **Path doesn't exist** → runs `git clone`
-   - **Path exists + is git repo + no `--sync`** → skips
-   - **Path exists + is git repo + `--sync`** → runs `git pull`
+   - **Path exists + is git repo** → runs `git pull`
+   - **Path exists + is git repo + `--no-pull`** → skips
    - **Path exists + NOT a git repo** → reports error
 4. Prints a summary of cloned, pulled, skipped, and errored services
 
 **Examples:**
 ```bash
-# Clone all service repositories
-grund clone
+# Sync all service repositories (clone missing + pull existing)
+grund sync
 
-# Clone specific services
-grund clone user-service order-service
+# Sync specific services
+grund sync user-service order-service
 
-# Clone missing repos + pull existing ones
-grund clone --sync
+# Only clone missing repos, don't pull existing
+grund sync --no-pull
 
-# Pull latest for a specific service
-grund clone user-service --sync
+# Clone missing specific service only
+grund sync user-service --no-pull
 ```
 
 **Sample output:**
 ```
-[INFO] Cloning 3 service(s)...
+[INFO] Syncing 3 service(s)...
   → user-service: cloning git@github.com:company/user-service.git...
-  → order-service: already cloned, skipping (use --sync to pull)
+  → order-service: pulling latest...
   → notification-service: cloning git@github.com:company/notification-service.git...
 
-╭──────────────────────┬───────────┬──────────────────────────────────────────┬────────────────────╮
-│ Service              │ Status    │ Path                                     │ Comment            │
-├──────────────────────┼───────────┼──────────────────────────────────────────┼────────────────────┤
-│ user-service         │ ● cloned  │ /Users/dev/projects/user-service         │                    │
-│ order-service        │ ○ skipped │ /Users/dev/projects/order-service        │ use --sync to pull │
-│ notification-service │ ● cloned  │ /Users/dev/projects/notification-service │                    │
-╰──────────────────────┴───────────┴──────────────────────────────────────────┴────────────────────╯
+╭──────────────────────┬───────────┬──────────────────────────────────────────┬─────────╮
+│ Service              │ Status    │ Path                                     │ Comment │
+├──────────────────────┼───────────┼──────────────────────────────────────────┼─────────┤
+│ user-service         │ ● cloned  │ /Users/dev/projects/user-service         │ -       │
+│ order-service        │ ● pulled  │ /Users/dev/projects/order-service        │ -       │
+│ notification-service │ ● cloned  │ /Users/dev/projects/notification-service │ -       │
+╰──────────────────────┴───────────┴──────────────────────────────────────────┴─────────╯
 
-[INFO] Cloned: 2, Pulled: 0, Skipped: 1, Errors: 0
+[INFO] Cloned: 2, Pulled: 1, Skipped: 0, Errors: 0
 ```
 
 > [!TIP]
-> Run `grund clone` after `grund init` to set up all service repositories in one command.
+> Run `grund sync` after `grund init` to set up all service repositories in one command.
 
 ---
 

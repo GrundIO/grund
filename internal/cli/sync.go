@@ -14,26 +14,26 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var cloneSync bool
+var syncNoPull bool
 
-var cloneCmd = &cobra.Command{
-	Use:   "clone [services...]",
-	Short: "Clone service repositories",
-	Long: `Clone all (or specific) service repositories defined in services.yaml.
+var syncCmd = &cobra.Command{
+	Use:   "sync [services...]",
+	Short: "Sync service repositories (clone missing, pull existing)",
+	Long: `Sync all (or specific) service repositories defined in services.yaml.
 
-By default, services that are already cloned are skipped.
-Use --sync to pull the latest changes for existing repositories.`,
+Missing repositories are cloned. Existing repositories are pulled to the latest.
+Use --no-pull to only clone missing repositories without pulling existing ones.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if shared.Container == nil {
 			return fmt.Errorf("container not initialized")
 		}
 
-		cloneCmd := commands.CloneCommand{
+		syncCmd := commands.SyncCommand{
 			ServiceNames: args,
-			Sync:         cloneSync,
+			NoPull:       syncNoPull,
 		}
 
-		results, err := shared.Container.CloneCommandHandler.Handle(cmd.Context(), cloneCmd)
+		results, err := shared.Container.SyncCommandHandler.Handle(cmd.Context(), syncCmd)
 		if err != nil {
 			return err
 		}
@@ -42,15 +42,15 @@ Use --sync to pull the latest changes for existing repositories.`,
 			return nil
 		}
 
-		return renderCloneResults(results)
+		return renderSyncResults(results)
 	},
 }
 
 func init() {
-	cloneCmd.Flags().BoolVar(&cloneSync, "sync", false, "Pull latest changes for already cloned repositories")
+	syncCmd.Flags().BoolVar(&syncNoPull, "no-pull", false, "Only clone missing repositories, skip pulling existing ones")
 }
 
-func renderCloneResults(results []ports.CloneResult) error {
+func renderSyncResults(results []ports.CloneResult) error {
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
 	t.SetStyle(table.StyleRounded)
@@ -81,7 +81,7 @@ func renderCloneResults(results []ports.CloneResult) error {
 			statusIcon = "○"
 			statusColor = text.FgYellow
 			statusText = "skipped"
-			comment = "use --sync to pull"
+			comment = "--no-pull"
 		default:
 			statusIcon = "●"
 			statusColor = text.FgRed
@@ -112,7 +112,7 @@ func renderCloneResults(results []ports.CloneResult) error {
 	ui.Infof("Cloned: %d, Pulled: %d, Skipped: %d, Errors: %d", cloned, pulled, skipped, errored)
 
 	if errored > 0 {
-		return fmt.Errorf("clone completed with %d error(s): %s", errored, strings.Join(errors, "; "))
+		return fmt.Errorf("sync completed with %d error(s): %s", errored, strings.Join(errors, "; "))
 	}
 
 	return nil

@@ -36,12 +36,12 @@ func (m *mockGitClient) IsGitRepository(path string) bool {
 	return m.isGitRepo[path]
 }
 
-type mockCloneRegistryRepo struct {
+type mockSyncRegistryRepo struct {
 	services map[service.ServiceName]ports.ServiceEntry
 	err      error
 }
 
-func (m *mockCloneRegistryRepo) GetServicePath(name service.ServiceName) (string, error) {
+func (m *mockSyncRegistryRepo) GetServicePath(name service.ServiceName) (string, error) {
 	entry, ok := m.services[name]
 	if !ok {
 		return "", fmt.Errorf("service %s not found", name)
@@ -49,7 +49,7 @@ func (m *mockCloneRegistryRepo) GetServicePath(name service.ServiceName) (string
 	return entry.Path, nil
 }
 
-func (m *mockCloneRegistryRepo) GetAllServices() (map[service.ServiceName]ports.ServiceEntry, error) {
+func (m *mockSyncRegistryRepo) GetAllServices() (map[service.ServiceName]ports.ServiceEntry, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -58,17 +58,17 @@ func (m *mockCloneRegistryRepo) GetAllServices() (map[service.ServiceName]ports.
 
 // --- Tests ---
 
-func TestCloneCommandHandler_CloneAll(t *testing.T) {
-	registry := &mockCloneRegistryRepo{
+func TestSyncCommandHandler_SyncAll(t *testing.T) {
+	registry := &mockSyncRegistryRepo{
 		services: map[service.ServiceName]ports.ServiceEntry{
-			"svc-a": {Repo: "git@github.com:org/svc-a.git", Path: "/tmp/test-clone/svc-a"},
-			"svc-b": {Repo: "git@github.com:org/svc-b.git", Path: "/tmp/test-clone/svc-b"},
+			"svc-a": {Repo: "git@github.com:org/svc-a.git", Path: "/tmp/test-sync/svc-a"},
+			"svc-b": {Repo: "git@github.com:org/svc-b.git", Path: "/tmp/test-sync/svc-b"},
 		},
 	}
 	gitClient := &mockGitClient{}
-	handler := NewCloneCommandHandler(registry, gitClient)
+	handler := NewSyncCommandHandler(registry, gitClient)
 
-	cmd := CloneCommand{} // no service names = all
+	cmd := SyncCommand{} // no service names = all
 
 	results, err := handler.Handle(context.Background(), cmd)
 	if err != nil {
@@ -85,17 +85,17 @@ func TestCloneCommandHandler_CloneAll(t *testing.T) {
 	}
 }
 
-func TestCloneCommandHandler_CloneSpecific(t *testing.T) {
-	registry := &mockCloneRegistryRepo{
+func TestSyncCommandHandler_SyncSpecific(t *testing.T) {
+	registry := &mockSyncRegistryRepo{
 		services: map[service.ServiceName]ports.ServiceEntry{
-			"svc-a": {Repo: "git@github.com:org/svc-a.git", Path: "/tmp/test-clone/svc-a"},
-			"svc-b": {Repo: "git@github.com:org/svc-b.git", Path: "/tmp/test-clone/svc-b"},
+			"svc-a": {Repo: "git@github.com:org/svc-a.git", Path: "/tmp/test-sync/svc-a"},
+			"svc-b": {Repo: "git@github.com:org/svc-b.git", Path: "/tmp/test-sync/svc-b"},
 		},
 	}
 	gitClient := &mockGitClient{}
-	handler := NewCloneCommandHandler(registry, gitClient)
+	handler := NewSyncCommandHandler(registry, gitClient)
 
-	cmd := CloneCommand{ServiceNames: []string{"svc-a"}}
+	cmd := SyncCommand{ServiceNames: []string{"svc-a"}}
 
 	results, err := handler.Handle(context.Background(), cmd)
 	if err != nil {
@@ -113,8 +113,8 @@ func TestCloneCommandHandler_CloneSpecific(t *testing.T) {
 	}
 }
 
-func TestCloneCommandHandler_SkipExistingNoSync(t *testing.T) {
-	registry := &mockCloneRegistryRepo{
+func TestSyncCommandHandler_PullExisting(t *testing.T) {
+	registry := &mockSyncRegistryRepo{
 		services: map[service.ServiceName]ports.ServiceEntry{
 			"svc-a": {Repo: "git@github.com:org/svc-a.git", Path: "/tmp"}, // /tmp exists
 		},
@@ -122,38 +122,9 @@ func TestCloneCommandHandler_SkipExistingNoSync(t *testing.T) {
 	gitClient := &mockGitClient{
 		isGitRepo: map[string]bool{"/tmp": true},
 	}
-	handler := NewCloneCommandHandler(registry, gitClient)
+	handler := NewSyncCommandHandler(registry, gitClient)
 
-	cmd := CloneCommand{Sync: false}
-
-	results, err := handler.Handle(context.Background(), cmd)
-	if err != nil {
-		t.Fatalf("Handle() returned error: %v", err)
-	}
-
-	if len(gitClient.cloneCalls) != 0 {
-		t.Errorf("Expected 0 clone calls, got %d", len(gitClient.cloneCalls))
-	}
-	if len(gitClient.pullCalls) != 0 {
-		t.Errorf("Expected 0 pull calls, got %d", len(gitClient.pullCalls))
-	}
-	if countResultsByAction(results, "skipped") != 1 {
-		t.Errorf("Expected 1 skipped result, got %v", results)
-	}
-}
-
-func TestCloneCommandHandler_SyncExisting(t *testing.T) {
-	registry := &mockCloneRegistryRepo{
-		services: map[service.ServiceName]ports.ServiceEntry{
-			"svc-a": {Repo: "git@github.com:org/svc-a.git", Path: "/tmp"}, // /tmp exists
-		},
-	}
-	gitClient := &mockGitClient{
-		isGitRepo: map[string]bool{"/tmp": true},
-	}
-	handler := NewCloneCommandHandler(registry, gitClient)
-
-	cmd := CloneCommand{Sync: true}
+	cmd := SyncCommand{} // default: pull existing
 
 	results, err := handler.Handle(context.Background(), cmd)
 	if err != nil {
@@ -171,8 +142,37 @@ func TestCloneCommandHandler_SyncExisting(t *testing.T) {
 	}
 }
 
-func TestCloneCommandHandler_ExistsButNotGitRepo(t *testing.T) {
-	registry := &mockCloneRegistryRepo{
+func TestSyncCommandHandler_NoPullSkipsExisting(t *testing.T) {
+	registry := &mockSyncRegistryRepo{
+		services: map[service.ServiceName]ports.ServiceEntry{
+			"svc-a": {Repo: "git@github.com:org/svc-a.git", Path: "/tmp"}, // /tmp exists
+		},
+	}
+	gitClient := &mockGitClient{
+		isGitRepo: map[string]bool{"/tmp": true},
+	}
+	handler := NewSyncCommandHandler(registry, gitClient)
+
+	cmd := SyncCommand{NoPull: true}
+
+	results, err := handler.Handle(context.Background(), cmd)
+	if err != nil {
+		t.Fatalf("Handle() returned error: %v", err)
+	}
+
+	if len(gitClient.cloneCalls) != 0 {
+		t.Errorf("Expected 0 clone calls, got %d", len(gitClient.cloneCalls))
+	}
+	if len(gitClient.pullCalls) != 0 {
+		t.Errorf("Expected 0 pull calls, got %d", len(gitClient.pullCalls))
+	}
+	if countResultsByAction(results, "skipped") != 1 {
+		t.Errorf("Expected 1 skipped result, got %v", results)
+	}
+}
+
+func TestSyncCommandHandler_ExistsButNotGitRepo(t *testing.T) {
+	registry := &mockSyncRegistryRepo{
 		services: map[service.ServiceName]ports.ServiceEntry{
 			"svc-a": {Repo: "git@github.com:org/svc-a.git", Path: "/tmp"}, // /tmp exists
 		},
@@ -180,9 +180,9 @@ func TestCloneCommandHandler_ExistsButNotGitRepo(t *testing.T) {
 	gitClient := &mockGitClient{
 		isGitRepo: map[string]bool{"/tmp": false},
 	}
-	handler := NewCloneCommandHandler(registry, gitClient)
+	handler := NewSyncCommandHandler(registry, gitClient)
 
-	cmd := CloneCommand{}
+	cmd := SyncCommand{}
 
 	results, err := handler.Handle(context.Background(), cmd)
 	if err != nil {
@@ -197,16 +197,16 @@ func TestCloneCommandHandler_ExistsButNotGitRepo(t *testing.T) {
 	}
 }
 
-func TestCloneCommandHandler_ServiceNotFound(t *testing.T) {
-	registry := &mockCloneRegistryRepo{
+func TestSyncCommandHandler_ServiceNotFound(t *testing.T) {
+	registry := &mockSyncRegistryRepo{
 		services: map[service.ServiceName]ports.ServiceEntry{
 			"svc-a": {Repo: "git@github.com:org/svc-a.git", Path: "/tmp/svc-a"},
 		},
 	}
 	gitClient := &mockGitClient{}
-	handler := NewCloneCommandHandler(registry, gitClient)
+	handler := NewSyncCommandHandler(registry, gitClient)
 
-	cmd := CloneCommand{ServiceNames: []string{"nonexistent"}}
+	cmd := SyncCommand{ServiceNames: []string{"nonexistent"}}
 
 	_, err := handler.Handle(context.Background(), cmd)
 	if err == nil {
@@ -214,16 +214,16 @@ func TestCloneCommandHandler_ServiceNotFound(t *testing.T) {
 	}
 }
 
-func TestCloneCommandHandler_NoRepoField(t *testing.T) {
-	registry := &mockCloneRegistryRepo{
+func TestSyncCommandHandler_NoRepoField(t *testing.T) {
+	registry := &mockSyncRegistryRepo{
 		services: map[service.ServiceName]ports.ServiceEntry{
 			"svc-a": {Repo: "", Path: "/tmp/svc-a"},
 		},
 	}
 	gitClient := &mockGitClient{}
-	handler := NewCloneCommandHandler(registry, gitClient)
+	handler := NewSyncCommandHandler(registry, gitClient)
 
-	cmd := CloneCommand{ServiceNames: []string{"svc-a"}}
+	cmd := SyncCommand{ServiceNames: []string{"svc-a"}}
 
 	_, err := handler.Handle(context.Background(), cmd)
 	if err == nil {
@@ -231,16 +231,16 @@ func TestCloneCommandHandler_NoRepoField(t *testing.T) {
 	}
 }
 
-func TestCloneCommandHandler_NoPathField(t *testing.T) {
-	registry := &mockCloneRegistryRepo{
+func TestSyncCommandHandler_NoPathField(t *testing.T) {
+	registry := &mockSyncRegistryRepo{
 		services: map[service.ServiceName]ports.ServiceEntry{
 			"svc-a": {Repo: "git@github.com:org/svc-a.git", Path: ""},
 		},
 	}
 	gitClient := &mockGitClient{}
-	handler := NewCloneCommandHandler(registry, gitClient)
+	handler := NewSyncCommandHandler(registry, gitClient)
 
-	cmd := CloneCommand{ServiceNames: []string{"svc-a"}}
+	cmd := SyncCommand{ServiceNames: []string{"svc-a"}}
 
 	_, err := handler.Handle(context.Background(), cmd)
 	if err == nil {
@@ -248,19 +248,19 @@ func TestCloneCommandHandler_NoPathField(t *testing.T) {
 	}
 }
 
-func TestCloneCommandHandler_PartialFailure(t *testing.T) {
-	registry := &mockCloneRegistryRepo{
+func TestSyncCommandHandler_PartialFailure(t *testing.T) {
+	registry := &mockSyncRegistryRepo{
 		services: map[service.ServiceName]ports.ServiceEntry{
-			"svc-a": {Repo: "git@github.com:org/svc-a.git", Path: "/tmp/test-clone-partial/svc-a"},
-			"svc-b": {Repo: "git@github.com:org/svc-b.git", Path: "/tmp/test-clone-partial/svc-b"},
+			"svc-a": {Repo: "git@github.com:org/svc-a.git", Path: "/tmp/test-sync-partial/svc-a"},
+			"svc-b": {Repo: "git@github.com:org/svc-b.git", Path: "/tmp/test-sync-partial/svc-b"},
 		},
 	}
 	gitClient := &mockGitClient{
 		cloneErr: fmt.Errorf("network error"),
 	}
-	handler := NewCloneCommandHandler(registry, gitClient)
+	handler := NewSyncCommandHandler(registry, gitClient)
 
-	cmd := CloneCommand{}
+	cmd := SyncCommand{}
 
 	results, err := handler.Handle(context.Background(), cmd)
 	if err != nil {
@@ -273,14 +273,14 @@ func TestCloneCommandHandler_PartialFailure(t *testing.T) {
 	}
 }
 
-func TestCloneCommandHandler_RegistryError(t *testing.T) {
-	registry := &mockCloneRegistryRepo{
+func TestSyncCommandHandler_RegistryError(t *testing.T) {
+	registry := &mockSyncRegistryRepo{
 		err: fmt.Errorf("failed to read registry"),
 	}
 	gitClient := &mockGitClient{}
-	handler := NewCloneCommandHandler(registry, gitClient)
+	handler := NewSyncCommandHandler(registry, gitClient)
 
-	cmd := CloneCommand{}
+	cmd := SyncCommand{}
 
 	_, err := handler.Handle(context.Background(), cmd)
 	if err == nil {
@@ -288,17 +288,16 @@ func TestCloneCommandHandler_RegistryError(t *testing.T) {
 	}
 }
 
-func TestCloneCommandHandler_NoServicesWithRepo(t *testing.T) {
-	registry := &mockCloneRegistryRepo{
+func TestSyncCommandHandler_NoServicesWithRepo(t *testing.T) {
+	registry := &mockSyncRegistryRepo{
 		services: map[service.ServiceName]ports.ServiceEntry{
 			"svc-a": {Repo: "", Path: "/tmp/svc-a"},
 		},
 	}
 	gitClient := &mockGitClient{}
-	handler := NewCloneCommandHandler(registry, gitClient)
+	handler := NewSyncCommandHandler(registry, gitClient)
 
-	// Clone all — but none have repo
-	cmd := CloneCommand{}
+	cmd := SyncCommand{}
 
 	results, err := handler.Handle(context.Background(), cmd)
 	if err != nil {
@@ -313,8 +312,8 @@ func TestCloneCommandHandler_NoServicesWithRepo(t *testing.T) {
 	}
 }
 
-func TestCloneCommandHandler_PullError(t *testing.T) {
-	registry := &mockCloneRegistryRepo{
+func TestSyncCommandHandler_PullError(t *testing.T) {
+	registry := &mockSyncRegistryRepo{
 		services: map[service.ServiceName]ports.ServiceEntry{
 			"svc-a": {Repo: "git@github.com:org/svc-a.git", Path: "/tmp"}, // /tmp exists
 		},
@@ -323,9 +322,9 @@ func TestCloneCommandHandler_PullError(t *testing.T) {
 		isGitRepo: map[string]bool{"/tmp": true},
 		pullErr:   fmt.Errorf("merge conflict"),
 	}
-	handler := NewCloneCommandHandler(registry, gitClient)
+	handler := NewSyncCommandHandler(registry, gitClient)
 
-	cmd := CloneCommand{Sync: true}
+	cmd := SyncCommand{}
 
 	results, err := handler.Handle(context.Background(), cmd)
 	if err != nil {
@@ -338,13 +337,11 @@ func TestCloneCommandHandler_PullError(t *testing.T) {
 }
 
 func TestExpandTilde(t *testing.T) {
-	// Test non-tilde path stays unchanged
 	result := expandTilde("/usr/local/bin")
 	if result != "/usr/local/bin" {
 		t.Errorf("Expected /usr/local/bin, got %s", result)
 	}
 
-	// Test empty path
 	result = expandTilde("")
 	if result != "" {
 		t.Errorf("Expected empty string, got %s", result)

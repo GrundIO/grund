@@ -41,7 +41,7 @@ type Container struct {
 	UpCommandHandler      *commands.UpCommandHandler
 	DownCommandHandler    *commands.DownCommandHandler
 	RestartCommandHandler *commands.RestartCommandHandler
-	CloneCommandHandler   *commands.CloneCommandHandler
+	SyncCommandHandler    *commands.SyncCommandHandler
 
 	// Query Handlers
 	StatusQueryHandler *queries.StatusQueryHandler
@@ -138,9 +138,9 @@ func NewContainerWithConfig(orchestrationRoot, servicesPath string, configResolv
 	)
 	restartHandler := commands.NewRestartCommandHandler(orchestrator)
 
-	// Initialize git client and clone handler
+	// Initialize git client and sync handler
 	gitClient := git.NewClient()
-	cloneHandler := commands.NewCloneCommandHandler(registryRepo, gitClient)
+	syncHandler := commands.NewSyncCommandHandler(registryRepo, gitClient)
 
 	// Initialize query handlers
 	statusHandler := queries.NewStatusQueryHandler(orchestrator)
@@ -165,7 +165,7 @@ func NewContainerWithConfig(orchestrationRoot, servicesPath string, configResolv
 		UpCommandHandler:      upHandler,
 		DownCommandHandler:    downHandler,
 		RestartCommandHandler: restartHandler,
-		CloneCommandHandler:   cloneHandler,
+		SyncCommandHandler:    syncHandler,
 		StatusQueryHandler:    statusHandler,
 		ConfigQueryHandler:    configHandler,
 	}, nil
