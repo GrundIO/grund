@@ -19,6 +19,14 @@ Grund is a local development orchestration tool. It starts services with their d
 
 ## Quick Reference
 
+### Cloning Repositories
+` + "```bash" + `
+grund clone                     # Clone all service repos from registry
+grund clone svc-a svc-b         # Clone specific services
+grund clone --sync              # Clone missing + pull existing repos
+grund clone svc-a --sync        # Pull latest for a specific service
+` + "```" + `
+
 ### Starting Services
 ` + "```bash" + `
 grund up <service>              # Start service with all dependencies
@@ -257,17 +265,20 @@ secrets:
 
 ### Starting a Service for Development
 ` + "```bash" + `
-# 1. Check what secrets are needed
+# 1. Clone service repositories
+grund clone
+
+# 2. Check what secrets are needed
 grund secrets list my-service
 
-# 2. Set up missing secrets (if any)
+# 3. Set up missing secrets (if any)
 grund secrets init my-service
 # Edit ~/.grund/secrets.env with actual values
 
-# 3. Start the service
+# 4. Start the service
 grund up my-service
 
-# 4. Verify it's running
+# 5. Verify it's running
 grund status
 ` + "```" + `
 
@@ -341,10 +352,23 @@ grund service init
 # 3. Register in ~/.grund/services.yaml
 # Add:
 #   my-new-service:
+#     repo: git@github.com:company/my-new-service.git
 #     path: ~/projects/my-new-service
 
 # 4. Start it
 grund up my-new-service
+` + "```" + `
+
+### Onboarding a New Team Member
+` + "```bash" + `
+# 1. Run interactive setup
+grund init
+
+# 2. Clone all service repos at once
+grund clone
+
+# 3. Start working
+grund up my-service
 ` + "```" + `
 
 ---
