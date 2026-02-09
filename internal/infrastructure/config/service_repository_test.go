@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/Saturn-Fintech/grund/internal/application/ports"
 	"github.com/Saturn-Fintech/grund/internal/domain/service"
@@ -251,5 +252,88 @@ service:
 	_, err = repo.FindByName(service.ServiceName("test-service"))
 	if err == nil {
 		t.Error("Expected error for invalid port, got nil")
+	}
+}
+
+func TestServiceRepository_ParsesHooks(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Create grund.yaml with hooks
+	grundYAML := `version: "1"
+service:
+  name: test-service
+  type: go
+  port: 8080
+  build:
+    dockerfile: Dockerfile
+    context: .
+  health:
+    endpoint: /health
+    interval: 5s
+    timeout: 3s
+    retries: 3
+  hooks:
+    pre_up:
+      - name: "Generate config"
+        command: "./scripts/gen.sh"
+        target: host
+    post_infrastructure:
+      - name: "Run migrations"
+        command: "psql -f migrations.sql"
+        target: host
+        timeout: 5m
+    post_up:
+      - name: "Create admin"
+        command: "bin/create-admin"
+        target: container
+        continue_on_error: true
+requires:
+  services: []
+  infrastructure: {}
+env: {}
+`
+	err := os.WriteFile(filepath.Join(tmpDir, "grund.yaml"), []byte(grundYAML), 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	registry := &mockRegistryRepo{
+		paths: map[string]string{
+			"test-service": tmpDir,
+		},
+	}
+
+	repo := NewServiceRepository(registry)
+	svc, err := repo.FindByName(service.ServiceName("test-service"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify hooks were parsed
+	if len(svc.Hooks.PreUp) != 1 {
+		t.Errorf("expected 1 pre_up hook, got %d", len(svc.Hooks.PreUp))
+	}
+	if svc.Hooks.PreUp[0].Name != "Generate config" {
+		t.Errorf("expected hook name 'Generate config', got '%s'", svc.Hooks.PreUp[0].Name)
+	}
+	if svc.Hooks.PreUp[0].Target != service.HookTargetHost {
+		t.Errorf("expected target host, got %s", svc.Hooks.PreUp[0].Target)
+	}
+
+	if len(svc.Hooks.PostInfrastructure) != 1 {
+		t.Errorf("expected 1 post_infrastructure hook, got %d", len(svc.Hooks.PostInfrastructure))
+	}
+	if svc.Hooks.PostInfrastructure[0].Timeout != 5*time.Minute {
+		t.Errorf("expected timeout 5m, got %v", svc.Hooks.PostInfrastructure[0].Timeout)
+	}
+
+	if len(svc.Hooks.PostUp) != 1 {
+		t.Errorf("expected 1 post_up hook, got %d", len(svc.Hooks.PostUp))
+	}
+	if svc.Hooks.PostUp[0].Target != service.HookTargetContainer {
+		t.Errorf("expected target container, got %s", svc.Hooks.PostUp[0].Target)
+	}
+	if !svc.Hooks.PostUp[0].ContinueOnError {
+		t.Error("expected continue_on_error true")
 	}
 }

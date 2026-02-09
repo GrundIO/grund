@@ -12,6 +12,7 @@ import (
 	"github.com/Saturn-Fintech/grund/internal/infrastructure/config"
 	"github.com/Saturn-Fintech/grund/internal/infrastructure/docker"
 	"github.com/Saturn-Fintech/grund/internal/infrastructure/generator"
+	"github.com/Saturn-Fintech/grund/internal/infrastructure/hooks"
 	"github.com/Saturn-Fintech/grund/internal/infrastructure/tunnel"
 )
 
@@ -33,6 +34,7 @@ type Container struct {
 	ComposeGenerator interface{} // ports.ComposeGenerator
 	EnvResolver      interface{} // ports.EnvironmentResolver
 	HealthChecker    interface{} // ports.HealthChecker
+	HookExecutor     interface{} // ports.HookExecutor
 
 	// Command Handlers
 	UpCommandHandler      *commands.UpCommandHandler
@@ -111,6 +113,9 @@ func NewContainerWithConfig(orchestrationRoot, servicesPath string, configResolv
 	// Initialize tunnel manager
 	tunnelManager := tunnel.NewManager()
 
+	// Initialize hook executor
+	hookExecutor := hooks.NewHookExecutor()
+
 	// Initialize command handlers
 	upHandler := commands.NewUpCommandHandler(
 		serviceRepo,
@@ -120,9 +125,15 @@ func NewContainerWithConfig(orchestrationRoot, servicesPath string, configResolv
 		composeGenerator,
 		healthChecker,
 		tunnelManager,
+		hookExecutor,
 	)
 
-	downHandler := commands.NewDownCommandHandler(orchestrator)
+	downHandler := commands.NewDownCommandHandler(
+		serviceRepo,
+		registryRepo,
+		orchestrator,
+		hookExecutor,
+	)
 	restartHandler := commands.NewRestartCommandHandler(orchestrator)
 
 	// Initialize query handlers
@@ -144,6 +155,7 @@ func NewContainerWithConfig(orchestrationRoot, servicesPath string, configResolv
 		ComposeGenerator:      composeGenerator,
 		EnvResolver:           envResolver,
 		HealthChecker:         healthChecker,
+		HookExecutor:          hookExecutor,
 		UpCommandHandler:      upHandler,
 		DownCommandHandler:    downHandler,
 		RestartCommandHandler: restartHandler,

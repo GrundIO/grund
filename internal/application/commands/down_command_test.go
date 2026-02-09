@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Saturn-Fintech/grund/internal/application/ports"
+	"github.com/Saturn-Fintech/grund/internal/domain/infrastructure"
 	"github.com/Saturn-Fintech/grund/internal/domain/service"
 )
 
@@ -47,9 +48,47 @@ func (m *mockDownOrchestrator) SetComposeFiles(files []string) {
 	// no-op for tests
 }
 
+type mockDownServiceRepo struct{}
+
+func (m *mockDownServiceRepo) FindByName(name service.ServiceName) (*service.Service, error) {
+	return &service.Service{Name: string(name)}, nil
+}
+
+func (m *mockDownServiceRepo) FindAll() ([]*service.Service, error) {
+	return []*service.Service{}, nil
+}
+
+func (m *mockDownServiceRepo) Save(svc *service.Service) error {
+	return nil
+}
+
+func (m *mockDownServiceRepo) ExtractTunnelConfig(name service.ServiceName) (*infrastructure.TunnelRequirement, error) {
+	return nil, nil
+}
+
+type mockDownRegistryRepo struct{}
+
+func (m *mockDownRegistryRepo) GetServicePath(name service.ServiceName) (string, error) {
+	return "/tmp/test", nil
+}
+
+func (m *mockDownRegistryRepo) GetAllServices() (map[service.ServiceName]ports.ServiceEntry, error) {
+	return map[service.ServiceName]ports.ServiceEntry{}, nil
+}
+
+type mockDownHookExecutor struct{}
+
+func (m *mockDownHookExecutor) Execute(ctx context.Context, hook service.Hook, execCtx ports.HookExecutionContext) error {
+	return nil
+}
+
+func (m *mockDownHookExecutor) ExecuteAll(ctx context.Context, hooks []service.Hook, execCtx ports.HookExecutionContext) error {
+	return nil
+}
+
 func TestDownCommandHandler_Handle_Success(t *testing.T) {
 	orchestrator := &mockDownOrchestrator{}
-	handler := NewDownCommandHandler(orchestrator)
+	handler := NewDownCommandHandler(&mockDownServiceRepo{}, &mockDownRegistryRepo{}, orchestrator, &mockDownHookExecutor{})
 
 	cmd := DownCommand{}
 
@@ -67,7 +106,7 @@ func TestDownCommandHandler_Handle_OrchestratorFails(t *testing.T) {
 	orchestrator := &mockDownOrchestrator{
 		stopErr: fmt.Errorf("docker compose down failed"),
 	}
-	handler := NewDownCommandHandler(orchestrator)
+	handler := NewDownCommandHandler(&mockDownServiceRepo{}, &mockDownRegistryRepo{}, orchestrator, &mockDownHookExecutor{})
 
 	cmd := DownCommand{}
 
@@ -79,7 +118,7 @@ func TestDownCommandHandler_Handle_OrchestratorFails(t *testing.T) {
 
 func TestDownCommandHandler_Handle_MultipleCalls(t *testing.T) {
 	orchestrator := &mockDownOrchestrator{}
-	handler := NewDownCommandHandler(orchestrator)
+	handler := NewDownCommandHandler(&mockDownServiceRepo{}, &mockDownRegistryRepo{}, orchestrator, &mockDownHookExecutor{})
 
 	// Call Handle twice
 	_ = handler.Handle(context.Background(), DownCommand{})

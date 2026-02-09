@@ -452,6 +452,76 @@ secrets:
 
 ---
 
+## Lifecycle Hooks
+
+Hooks allow you to run custom scripts at various stages of service startup and shutdown.
+
+### Configuration
+
+```yaml
+service:
+  name: my-service
+  hooks:
+    pre_up:
+      - name: "Generate config"
+        command: "./scripts/generate-config.sh"
+        target: host
+        timeout: 30s
+        continue_on_error: false
+
+    post_infrastructure:
+      - name: "Run migrations"
+        command: "psql -h localhost -f ./migrations/up.sql"
+        target: host
+
+    post_up:
+      - name: "Create admin user"
+        command: "bin/create-admin"
+        target: container
+
+    pre_down:
+      - name: "Drain connections"
+        command: "bin/drain"
+        target: container
+
+    post_down:
+      - name: "Cleanup temp files"
+        command: "rm -rf ./tmp/cache"
+        target: host
+```
+
+### Hook Fields
+
+| Field | Required | Default | Description |
+|-------|----------|---------|-------------|
+| `name` | Yes | - | Human-readable hook name |
+| `command` | Yes | - | Command to execute |
+| `target` | Yes | - | `host` or `container` |
+| `timeout` | No | `10m` | Maximum execution time |
+| `continue_on_error` | No | `false` | Continue if hook fails |
+
+### Lifecycle Stages
+
+| Stage | When | Allowed Targets |
+|-------|------|-----------------|
+| `pre_up` | Before anything starts | `host` only |
+| `post_infrastructure` | After DBs/queues ready | `host` only |
+| `post_up` | After services healthy | `host`, `container` |
+| `pre_down` | Before stopping | `host`, `container` |
+| `post_down` | After containers stopped | `host` only |
+
+### Environment Variables
+
+Hooks have access to the same environment variables as your service:
+
+```bash
+$DATABASE_URL
+$REDIS_URL
+$SQS_QUEUE_URL
+```
+
+---
+
 ## ~/.grund/secrets.env (Secrets File)
 
 Store secret values that should not be committed to version control.

@@ -181,6 +181,16 @@ func (m *mockHealthChecker) WaitForHealthy(ctx context.Context, endpoint string,
 	return nil
 }
 
+type mockHookExecutor struct{}
+
+func (m *mockHookExecutor) Execute(ctx context.Context, hook service.Hook, execCtx ports.HookExecutionContext) error {
+	return nil
+}
+
+func (m *mockHookExecutor) ExecuteAll(ctx context.Context, hooks []service.Hook, execCtx ports.HookExecutionContext) error {
+	return nil
+}
+
 // Helper to create a test service
 func createTestService(name string, deps []string) *service.Service {
 	port, _ := service.NewPort(8080)
@@ -227,7 +237,7 @@ func TestUpCommandHandler_Handle_Success(t *testing.T) {
 	composeGen := &mockComposeGenerator{}
 	healthChecker := &mockHealthChecker{}
 
-	handler := NewUpCommandHandler(repo, registry, orchestrator, provisioner, composeGen, healthChecker, nil)
+	handler := NewUpCommandHandler(repo, registry, orchestrator, provisioner, composeGen, healthChecker, nil, &mockHookExecutor{})
 
 	cmd := UpCommand{
 		ServiceNames: []string{"service-a", "service-b"},
@@ -277,7 +287,7 @@ func TestUpCommandHandler_Handle_ServiceNotFound(t *testing.T) {
 	composeGen := &mockComposeGenerator{}
 	healthChecker := &mockHealthChecker{}
 
-	handler := NewUpCommandHandler(repo, registry, orchestrator, provisioner, composeGen, healthChecker, nil)
+	handler := NewUpCommandHandler(repo, registry, orchestrator, provisioner, composeGen, healthChecker, nil, &mockHookExecutor{})
 
 	cmd := UpCommand{
 		ServiceNames: []string{"nonexistent-service"},
@@ -310,7 +320,7 @@ func TestUpCommandHandler_Handle_CircularDependency(t *testing.T) {
 	composeGen := &mockComposeGenerator{}
 	healthChecker := &mockHealthChecker{}
 
-	handler := NewUpCommandHandler(repo, registry, orchestrator, provisioner, composeGen, healthChecker, nil)
+	handler := NewUpCommandHandler(repo, registry, orchestrator, provisioner, composeGen, healthChecker, nil, &mockHookExecutor{})
 
 	cmd := UpCommand{
 		ServiceNames: []string{"service-a", "service-b", "service-c"},
@@ -353,7 +363,7 @@ func TestUpCommandHandler_Handle_TransitiveDependencies(t *testing.T) {
 	composeGen := &mockComposeGenerator{}
 	healthChecker := &mockHealthChecker{}
 
-	handler := NewUpCommandHandler(repo, registry, orchestrator, provisioner, composeGen, healthChecker, nil)
+	handler := NewUpCommandHandler(repo, registry, orchestrator, provisioner, composeGen, healthChecker, nil, &mockHookExecutor{})
 
 	// Only request service-a, but B and C should be loaded as dependencies
 	cmd := UpCommand{
@@ -393,7 +403,7 @@ func TestUpCommandHandler_Handle_InfraOnly(t *testing.T) {
 	composeGen := &mockComposeGenerator{}
 	healthChecker := &mockHealthChecker{}
 
-	handler := NewUpCommandHandler(repo, registry, orchestrator, provisioner, composeGen, healthChecker, nil)
+	handler := NewUpCommandHandler(repo, registry, orchestrator, provisioner, composeGen, healthChecker, nil, &mockHookExecutor{})
 
 	cmd := UpCommand{
 		ServiceNames: []string{"service-a"},
@@ -432,7 +442,7 @@ func TestUpCommandHandler_Handle_NoDeps(t *testing.T) {
 	composeGen := &mockComposeGenerator{}
 	healthChecker := &mockHealthChecker{}
 
-	handler := NewUpCommandHandler(repo, registry, orchestrator, provisioner, composeGen, healthChecker, nil)
+	handler := NewUpCommandHandler(repo, registry, orchestrator, provisioner, composeGen, healthChecker, nil, &mockHookExecutor{})
 
 	// Only start service-a, even though it depends on service-b
 	cmd := UpCommand{
@@ -476,7 +486,7 @@ func TestUpCommandHandler_Handle_ProvisioningFails(t *testing.T) {
 	composeGen := &mockComposeGenerator{}
 	healthChecker := &mockHealthChecker{}
 
-	handler := NewUpCommandHandler(repo, registry, orchestrator, provisioner, composeGen, healthChecker, nil)
+	handler := NewUpCommandHandler(repo, registry, orchestrator, provisioner, composeGen, healthChecker, nil, &mockHookExecutor{})
 
 	cmd := UpCommand{
 		ServiceNames: []string{"service-a"},
@@ -513,7 +523,7 @@ func TestUpCommandHandler_Handle_WithLocalStack(t *testing.T) {
 	composeGen := &mockComposeGenerator{}
 	healthChecker := &mockHealthChecker{}
 
-	handler := NewUpCommandHandler(repo, registry, orchestrator, provisioner, composeGen, healthChecker, nil)
+	handler := NewUpCommandHandler(repo, registry, orchestrator, provisioner, composeGen, healthChecker, nil, &mockHookExecutor{})
 
 	cmd := UpCommand{
 		ServiceNames: []string{"service-a"},

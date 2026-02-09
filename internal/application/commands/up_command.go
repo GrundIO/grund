@@ -31,6 +31,7 @@ type UpCommandHandler struct {
 	composeGenerator ports.ComposeGenerator
 	healthChecker    ports.HealthChecker
 	tunnelManager    ports.TunnelManager // optional, can be nil
+	hookExecutor     ports.HookExecutor
 }
 
 // NewUpCommandHandler creates a new up command handler
@@ -42,6 +43,7 @@ func NewUpCommandHandler(
 	composeGenerator ports.ComposeGenerator,
 	healthChecker ports.HealthChecker,
 	tunnelManager ports.TunnelManager,
+	hookExecutor ports.HookExecutor,
 ) *UpCommandHandler {
 	return &UpCommandHandler{
 		serviceRepo:      serviceRepo,
@@ -51,6 +53,7 @@ func NewUpCommandHandler(
 		composeGenerator: composeGenerator,
 		healthChecker:    healthChecker,
 		tunnelManager:    tunnelManager,
+		hookExecutor:     hookExecutor,
 	}
 }
 
@@ -71,6 +74,11 @@ func (h *UpCommandHandler) Handle(ctx context.Context, cmd UpCommand) error {
 		return fmt.Errorf("failed to load services: %w", err)
 	}
 	ui.Debug("Loaded %d service(s)", len(services))
+
+	// Run pre_up hooks (before anything starts)
+	if err := h.runHooks(ctx, services, service.HookStagePreUp); err != nil {
+		return err
+	}
 
 	// 2. Build service names list from all loaded services
 	// Note: We no longer enforce startup order between services.
@@ -127,6 +135,11 @@ func (h *UpCommandHandler) Handle(ctx context.Context, cmd UpCommand) error {
 		ui.Successf("AWS resources provisioned")
 	}
 
+	// Run post_infrastructure hooks (after DBs/queues ready)
+	if err := h.runHooks(ctx, services, service.HookStagePostInfrastructure); err != nil {
+		return err
+	}
+
 	// 8.5. Regenerate service compose files with real AWS resource URLs
 	// Now that we have actual URLs/ARNs from LocalStack, update the compose files
 	if awsResources != nil {
@@ -144,6 +157,11 @@ func (h *UpCommandHandler) Handle(ctx context.Context, cmd UpCommand) error {
 			return fmt.Errorf("failed to start services: %w", err)
 		}
 		ui.Successf("All services started successfully")
+
+		// Run post_up hooks (after services healthy)
+		if err := h.runHooks(ctx, services, service.HookStagePostUp); err != nil {
+			return err
+		}
 	} else {
 		ui.Infof("Infrastructure only mode - skipping service startup")
 	}
@@ -340,4 +358,35 @@ func (h *UpCommandHandler) startTunnels(ctx context.Context, tunnelReq *infrastr
 	}
 
 	return tunnelContext, nil
+}
+
+// runHooks executes hooks for all services at the given stage
+func (h *UpCommandHandler) runHooks(ctx context.Context, services []*service.Service, stage service.HookStage) error {
+	for _, svc := range services {
+		hooks := svc.Hooks.GetHooksForStage(stage)
+		if len(hooks) == 0 {
+			continue
+		}
+
+		ui.Step("Running %s hooks for %s...", stage, svc.Name)
+
+		// Get service path for host execution
+		servicePath, err := h.registryRepo.GetServicePath(service.ServiceName(svc.Name))
+		if err != nil {
+			return fmt.Errorf("failed to get service path: %w", err)
+		}
+
+		// Build execution context
+		execCtx := ports.HookExecutionContext{
+			ServiceName:   svc.Name,
+			ServicePath:   servicePath,
+			ContainerName: fmt.Sprintf("grund-%s-1", svc.Name),
+			Environment:   svc.Environment.Variables,
+		}
+
+		if err := h.hookExecutor.ExecuteAll(ctx, hooks, execCtx); err != nil {
+			return fmt.Errorf("%s hooks failed for %s: %w", stage, svc.Name, err)
+		}
+	}
+	return nil
 }

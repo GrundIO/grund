@@ -114,6 +114,7 @@ type ServiceInfoDTO struct {
 	Build  *BuildConfigDTO `yaml:"build,omitempty"`
 	Run    *RunConfigDTO   `yaml:"run,omitempty"`
 	Health HealthConfigDTO `yaml:"health"`
+	Hooks  *HooksDTO       `yaml:"hooks,omitempty"`
 }
 
 type BuildConfigDTO struct {
@@ -205,6 +206,24 @@ type BucketConfigDTO struct {
 	Seed string `yaml:"seed,omitempty"`
 }
 
+// HooksDTO is the DTO for hooks YAML serialization
+type HooksDTO struct {
+	PreUp              []HookDTO `yaml:"pre_up,omitempty"`
+	PostInfrastructure []HookDTO `yaml:"post_infrastructure,omitempty"`
+	PostUp             []HookDTO `yaml:"post_up,omitempty"`
+	PreDown            []HookDTO `yaml:"pre_down,omitempty"`
+	PostDown           []HookDTO `yaml:"post_down,omitempty"`
+}
+
+// HookDTO is the DTO for individual hook YAML serialization
+type HookDTO struct {
+	Name            string `yaml:"name"`
+	Command         string `yaml:"command"`
+	Target          string `yaml:"target"`                      // "host" or "container"
+	Timeout         string `yaml:"timeout,omitempty"`           // e.g., "30s", "5m"
+	ContinueOnError bool   `yaml:"continue_on_error,omitempty"` // default false
+}
+
 // toDomainService converts DTO to domain model
 func (r *ServiceRepositoryImpl) toDomainService(dto ServiceConfigDTO, name service.ServiceName, servicePath string) (*service.Service, error) {
 	port, err := service.NewPort(dto.Service.Port)
@@ -273,6 +292,9 @@ func (r *ServiceRepositoryImpl) toDomainService(dto ServiceConfigDTO, name servi
 		Secrets:   secrets,
 	}
 
+	// Parse hooks
+	hooks := r.toHooks(dto.Service.Hooks)
+
 	svc := &service.Service{
 		Name:         dto.Service.Name,
 		Type:         service.ServiceType(dto.Service.Type),
@@ -282,6 +304,7 @@ func (r *ServiceRepositoryImpl) toDomainService(dto ServiceConfigDTO, name servi
 		Health:       health,
 		Dependencies: deps,
 		Environment:  env,
+		Hooks:        hooks,
 	}
 
 	return svc, svc.Validate()
@@ -366,6 +389,45 @@ func (r *ServiceRepositoryImpl) toInfrastructureRequirements(dto InfrastructureC
 	}
 
 	return req
+}
+
+// toHooks converts HooksDTO to domain Hooks
+func (r *ServiceRepositoryImpl) toHooks(dto *HooksDTO) service.Hooks {
+	if dto == nil {
+		return service.Hooks{}
+	}
+
+	return service.Hooks{
+		PreUp:              r.toHookSlice(dto.PreUp),
+		PostInfrastructure: r.toHookSlice(dto.PostInfrastructure),
+		PostUp:             r.toHookSlice(dto.PostUp),
+		PreDown:            r.toHookSlice(dto.PreDown),
+		PostDown:           r.toHookSlice(dto.PostDown),
+	}
+}
+
+// toHookSlice converts a slice of HookDTO to domain Hook slice
+func (r *ServiceRepositoryImpl) toHookSlice(dtos []HookDTO) []service.Hook {
+	if len(dtos) == 0 {
+		return nil
+	}
+
+	hooks := make([]service.Hook, len(dtos))
+	for i, dto := range dtos {
+		var timeout time.Duration
+		if dto.Timeout != "" {
+			timeout, _ = time.ParseDuration(dto.Timeout)
+		}
+
+		hooks[i] = service.Hook{
+			Name:            dto.Name,
+			Command:         dto.Command,
+			Target:          service.HookTarget(dto.Target),
+			Timeout:         timeout,
+			ContinueOnError: dto.ContinueOnError,
+		}
+	}
+	return hooks
 }
 
 func (r *ServiceRepositoryImpl) toConfigDTO(svc *service.Service) ServiceConfigDTO {
