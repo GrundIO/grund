@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strings"
 
 	"github.com/Saturn-Fintech/grund/internal/application/queries"
 	"github.com/Saturn-Fintech/grund/internal/cli/shared"
@@ -198,6 +199,10 @@ func renderGraph(ctx context.Context, result *queries.GraphResult, outputPath st
 			edge.SetColor("#D97706")
 			edge.SetStyle(graphviz.DashedEdgeStyle)
 			edge.SetPenWidth(1.0)
+
+			if strings.HasPrefix(infra, "sqs:") {
+				edge.SetDir(graphviz.BothDir)
+			}
 		}
 	}
 
@@ -275,7 +280,11 @@ func printDot(result *queries.GraphResult) {
 
 		// Service-to-infrastructure edges
 		for _, infra := range node.Infrastructure {
-			fmt.Printf("  %q -> %q [color=\"#D97706\", style=dashed, penwidth=1.0];\n", name, infra)
+			if strings.HasPrefix(infra, "sqs:") {
+				fmt.Printf("  %q -> %q [color=\"#D97706\", style=dashed, penwidth=1.0, dir=both];\n", name, infra)
+			} else {
+				fmt.Printf("  %q -> %q [color=\"#D97706\", style=dashed, penwidth=1.0];\n", name, infra)
+			}
 		}
 
 		// Isolated nodes still need to appear
