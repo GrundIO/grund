@@ -182,8 +182,8 @@ func TestGraphQueryHandler_ShowInfra(t *testing.T) {
 	for _, i := range node.Infrastructure {
 		infraMap[i] = true
 	}
-	if !infraMap["postgres"] {
-		t.Error("expected postgres in infrastructure")
+	if !infraMap["postgres:mydb"] {
+		t.Error("expected postgres:mydb in infrastructure")
 	}
 	if !infraMap["redis"] {
 		t.Error("expected redis in infrastructure")

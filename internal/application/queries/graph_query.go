@@ -105,7 +105,7 @@ func (h *GraphQueryHandler) Handle(query GraphQuery) (*GraphResult, error) {
 		sort.Strings(gn.Dependents)
 
 		if query.ShowInfra {
-			gn.Infrastructure = collectInfraTypes(node.Service)
+			gn.Infrastructure = collectInfraResources(node.Service)
 		}
 
 		nodes[name.String()] = gn
@@ -179,26 +179,36 @@ func (h *GraphQueryHandler) loadAllServices() ([]*service.Service, error) {
 	return services, nil
 }
 
-// collectInfraTypes returns the list of infrastructure types a service requires
-func collectInfraTypes(svc *service.Service) []string {
-	var types []string
-	if svc.RequiresInfrastructure("postgres") {
-		types = append(types, "postgres")
+// collectInfraResources returns specific infrastructure resource identifiers.
+// Each entry is "type:name" (e.g. "postgres:mydb", "sqs:orders-queue")
+// so that shared resources across services map to the same graph node.
+func collectInfraResources(svc *service.Service) []string {
+	infra := svc.Dependencies.Infrastructure
+	var resources []string
+
+	if infra.Postgres != nil {
+		resources = append(resources, "postgres:"+infra.Postgres.Database)
 	}
-	if svc.RequiresInfrastructure("mongodb") {
-		types = append(types, "mongodb")
+	if infra.MongoDB != nil {
+		resources = append(resources, "mongodb:"+infra.MongoDB.Database)
 	}
-	if svc.RequiresInfrastructure("redis") {
-		types = append(types, "redis")
+	if infra.Redis != nil {
+		resources = append(resources, "redis")
 	}
-	if svc.Dependencies.Infrastructure.SQS != nil {
-		types = append(types, "sqs")
+	if infra.SQS != nil {
+		for _, q := range infra.SQS.Queues {
+			resources = append(resources, "sqs:"+q.Name)
+		}
 	}
-	if svc.Dependencies.Infrastructure.SNS != nil {
-		types = append(types, "sns")
+	if infra.SNS != nil {
+		for _, t := range infra.SNS.Topics {
+			resources = append(resources, "sns:"+t.Name)
+		}
 	}
-	if svc.Dependencies.Infrastructure.S3 != nil {
-		types = append(types, "s3")
+	if infra.S3 != nil {
+		for _, b := range infra.S3.Buckets {
+			resources = append(resources, "s3:"+b.Name)
+		}
 	}
-	return types
+	return resources
 }

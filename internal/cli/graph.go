@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"sort"
-	"strings"
 
 	"github.com/Saturn-Fintech/grund/internal/application/queries"
 	"github.com/Saturn-Fintech/grund/internal/cli/shared"
@@ -122,17 +121,35 @@ func renderGraph(ctx context.Context, result *queries.GraphResult, outputPath st
 		node.SetMargin(0.15)
 		node.SetPenWidth(1.5)
 
-		// Build label with infrastructure info
-		graphNode := result.Nodes[name]
-		if len(graphNode.Infrastructure) > 0 {
-			label := name + "\n[" + strings.Join(graphNode.Infrastructure, ", ") + "]"
-			node.SetLabel(label)
-		}
-
 		gvNodes[name] = node
 	}
 
-	// Build a set of dependency pairs for mutual-dependency detection.
+	// Create infrastructure nodes (deduplicated across services)
+	infraNodes := make(map[string]*graphviz.Node)
+	for _, name := range names {
+		graphNode := result.Nodes[name]
+		for _, infra := range graphNode.Infrastructure {
+			if _, exists := infraNodes[infra]; exists {
+				continue
+			}
+			node, err := graph.CreateNodeByName(infra)
+			if err != nil {
+				return fmt.Errorf("failed to create infra node %s: %w", infra, err)
+			}
+			node.SetShape(graphviz.CylinderShape)
+			node.SetStyle(graphviz.FilledNodeStyle)
+			node.SetFillColor("#FEF3C7")
+			node.SetColor("#D97706")
+			node.SetFontName("Helvetica")
+			node.SetFontSize(10)
+			node.SetFontColor("#92400E")
+			node.SetPenWidth(1.5)
+
+			infraNodes[infra] = node
+		}
+	}
+
+	// Create service-to-service edges with bidirectional detection.
 	// When A→B and B→A both exist, draw a single bidirectional edge.
 	type edgePair struct{ from, to string }
 	created := make(map[edgePair]bool)
@@ -145,7 +162,6 @@ func renderGraph(ctx context.Context, result *queries.GraphResult, outputPath st
 				continue
 			}
 
-			// Skip if already handled as the reverse of a bidirectional edge
 			if created[edgePair{dep, name}] {
 				continue
 			}
@@ -159,7 +175,6 @@ func renderGraph(ctx context.Context, result *queries.GraphResult, outputPath st
 			edge.SetColor("#718096")
 			edge.SetPenWidth(1.2)
 
-			// Check if the reverse dependency also exists
 			if depNode, ok := result.Nodes[dep]; ok {
 				for _, revDep := range depNode.Dependencies {
 					if revDep == name {
@@ -170,6 +185,19 @@ func renderGraph(ctx context.Context, result *queries.GraphResult, outputPath st
 			}
 
 			created[edgePair{name, dep}] = true
+		}
+
+		// Create service-to-infrastructure edges
+		for _, infra := range graphNode.Infrastructure {
+			edgeName := fmt.Sprintf("e%d", edgeIndex)
+			edgeIndex++
+			edge, err := graph.CreateEdgeByName(edgeName, gvNodes[name], infraNodes[infra])
+			if err != nil {
+				return fmt.Errorf("failed to create infra edge %s -> %s: %w", name, infra, err)
+			}
+			edge.SetColor("#D97706")
+			edge.SetStyle(graphviz.DashedEdgeStyle)
+			edge.SetPenWidth(1.0)
 		}
 	}
 
@@ -203,24 +231,30 @@ func printDot(result *queries.GraphResult) {
 
 	names := sortedNodeNames(result)
 
+	// Declare infrastructure nodes
+	infraSeen := make(map[string]bool)
+	for _, name := range names {
+		for _, infra := range result.Nodes[name].Infrastructure {
+			if infraSeen[infra] {
+				continue
+			}
+			infraSeen[infra] = true
+			fmt.Printf("  %q [shape=cylinder, style=filled, fillcolor=\"#FEF3C7\", color=\"#D97706\", fontsize=10, fontcolor=\"#92400E\", penwidth=1.5];\n", infra)
+		}
+	}
+
 	type edgePair struct{ from, to string }
 	created := make(map[edgePair]bool)
 
 	for _, name := range names {
 		node := result.Nodes[name]
 
-		// Declare node with infrastructure label if present
-		if len(node.Infrastructure) > 0 {
-			label := name + "\\n[" + strings.Join(node.Infrastructure, ", ") + "]"
-			fmt.Printf("  %q [label=%q];\n", name, label)
-		}
-
+		// Service-to-service edges
 		for _, dep := range node.Dependencies {
 			if created[edgePair{dep, name}] {
 				continue
 			}
 
-			// Check if reverse dependency also exists
 			isMutual := false
 			if depNode, ok := result.Nodes[dep]; ok {
 				for _, revDep := range depNode.Dependencies {
@@ -239,8 +273,13 @@ func printDot(result *queries.GraphResult) {
 			created[edgePair{name, dep}] = true
 		}
 
+		// Service-to-infrastructure edges
+		for _, infra := range node.Infrastructure {
+			fmt.Printf("  %q -> %q [color=\"#D97706\", style=dashed, penwidth=1.0];\n", name, infra)
+		}
+
 		// Isolated nodes still need to appear
-		if len(node.Dependencies) == 0 && len(node.Dependents) == 0 {
+		if len(node.Dependencies) == 0 && len(node.Dependents) == 0 && len(node.Infrastructure) == 0 {
 			fmt.Printf("  %q;\n", name)
 		}
 	}
