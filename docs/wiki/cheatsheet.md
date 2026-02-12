@@ -31,6 +31,16 @@ Quick reference for all Grund CLI commands.
 | Stop and delete data | `grund reset -v` |
 | Full cleanup | `grund reset -v --images` |
 
+## Visualizing Dependencies
+
+| Task | Command |
+|------|---------|
+| Render dependency graph (SVG) | `grund graph` |
+| Graph for specific service | `grund graph <service>` |
+| Include infrastructure nodes | `grund graph --infra` |
+| Print DOT format to stdout | `grund graph --format dot` |
+| Custom output file | `grund graph -o deps.svg` |
+
 ## Monitoring
 
 | Task | Command |
