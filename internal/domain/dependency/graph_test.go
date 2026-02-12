@@ -38,6 +38,37 @@ func createTestService(name string, deps []string) *service.Service {
 	}
 }
 
+func TestGraph_GetAllNodes(t *testing.T) {
+	graph := NewGraph()
+
+	svcA := createTestService("service-a", []string{})
+	svcB := createTestService("service-b", []string{"service-a"})
+
+	graph.AddService(svcA)
+	graph.AddService(svcB)
+
+	nodes := graph.GetAllNodes()
+	if len(nodes) != 2 {
+		t.Fatalf("GetAllNodes() returned %d nodes, want 2", len(nodes))
+	}
+
+	if _, ok := nodes[service.ServiceName("service-a")]; !ok {
+		t.Error("GetAllNodes() missing service-a")
+	}
+	if _, ok := nodes[service.ServiceName("service-b")]; !ok {
+		t.Error("GetAllNodes() missing service-b")
+	}
+}
+
+func TestGraph_GetAllNodes_Empty(t *testing.T) {
+	graph := NewGraph()
+
+	nodes := graph.GetAllNodes()
+	if len(nodes) != 0 {
+		t.Fatalf("GetAllNodes() returned %d nodes for empty graph, want 0", len(nodes))
+	}
+}
+
 func TestGraph_AddService(t *testing.T) {
 	graph := NewGraph()
 	svc := createTestService("service-a", []string{})

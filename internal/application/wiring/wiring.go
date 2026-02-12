@@ -46,6 +46,7 @@ type Container struct {
 	// Query Handlers
 	StatusQueryHandler *queries.StatusQueryHandler
 	ConfigQueryHandler *queries.ConfigQueryHandler
+	GraphQueryHandler  *queries.GraphQueryHandler
 }
 
 // NewContainer creates a new dependency injection container
@@ -149,6 +150,7 @@ func NewContainerWithConfig(orchestrationRoot, servicesPath string, configResolv
 		registryRepo,
 		envResolver,
 	)
+	graphHandler := queries.NewGraphQueryHandler(serviceRepo, registryRepo)
 
 	return &Container{
 		ConfigResolver:        configResolver,
@@ -168,5 +170,6 @@ func NewContainerWithConfig(orchestrationRoot, servicesPath string, configResolv
 		SyncCommandHandler:    syncHandler,
 		StatusQueryHandler:    statusHandler,
 		ConfigQueryHandler:    configHandler,
+		GraphQueryHandler:     graphHandler,
 	}, nil
 }
