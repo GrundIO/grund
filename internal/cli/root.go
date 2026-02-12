@@ -27,6 +27,7 @@ services and their dependencies with a single command.
 Quick Start:
   grund up user-service       Start a service with dependencies
   grund status                Check running services
+  grund graph                 Visualize dependency graph
   grund down                  Stop everything
 
 Service Management:
@@ -115,6 +116,7 @@ func init() {
 	rootCmd.AddCommand(restartCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(syncCmd)
+	rootCmd.AddCommand(graphCmd)
 
 	// Service management
 	rootCmd.AddCommand(service.Cmd)

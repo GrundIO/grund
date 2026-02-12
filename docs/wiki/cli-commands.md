@@ -164,6 +164,65 @@ grund sync user-service --no-pull
 
 ---
 
+### `grund graph`
+
+Visualize the service dependency graph.
+
+```bash
+grund graph [services...] [flags]
+```
+
+**Arguments:**
+- `services` (optional): One or more service names. If omitted, graphs all registered services.
+
+**Flags:**
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--infra` | | Show infrastructure dependencies as separate nodes (postgres, redis, sqs, etc.) |
+| `--format` | | Output format: `svg` (default) or `dot` |
+| `--output` | `-o` | Output file path (default: `graph.svg`) |
+
+**What it does:**
+1. Loads all service configurations (skips services with missing `grund.yaml`)
+2. Builds the dependency graph (circular dependencies are handled gracefully)
+3. Renders the graph as SVG (or DOT text)
+4. Mutual dependencies are shown as a single bidirectional arrow
+5. With `--infra`, infrastructure resources become separate nodes — services sharing the same resource (e.g. same postgres database) connect to the same node
+6. SQS edges are bidirectional to reflect produce/consume nature
+
+**Examples:**
+```bash
+# Render full dependency graph to graph.svg
+grund graph
+
+# Render to custom file
+grund graph --output deps.svg
+
+# Graph for a specific service and its transitive dependencies
+grund graph user-service
+
+# Include infrastructure nodes (postgres, redis, sqs, etc.)
+grund graph --infra
+
+# Print DOT format to stdout (pipe to graphviz tools)
+grund graph --format dot
+
+# Pipe DOT to external graphviz for PDF
+grund graph --format dot | dot -Tpdf -o graph.pdf
+```
+
+**Sample DOT output:**
+```dot
+digraph dependencies {
+  rankdir=LR;
+  node [shape=box, style="filled,rounded", fillcolor="#E8F4FD", ...];
+  "user-service" -> "auth-service";
+  "auth-service" -> "token-service";
+}
+```
+
+---
+
 ### `grund down`
 
 Stop all running services and infrastructure.

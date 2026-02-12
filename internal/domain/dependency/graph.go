@@ -51,6 +51,11 @@ func (g *Graph) Build() error {
 	return nil
 }
 
+// GetAllNodes returns all nodes in the graph
+func (g *Graph) GetAllNodes() map[service.ServiceName]*Node {
+	return g.nodes
+}
+
 // GetNode returns a node by service name
 func (g *Graph) GetNode(name service.ServiceName) (*Node, error) {
 	node, ok := g.nodes[name]

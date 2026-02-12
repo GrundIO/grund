@@ -100,6 +100,7 @@ TAPES=(
     "grund-config-show:no"
 
     # Services needed
+    "grund-graph:yes"
     "grund-status:yes"
     "grund-logs:yes"
     "grund-up:yes"
