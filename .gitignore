@@ -165,6 +165,9 @@ temp/
 docker-compose.generated.yaml
 docker-compose.override.yaml
 
+# Plan files
+docs/plans/
+
 # Local development data
 .localdev/
 .grund/
