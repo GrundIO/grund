@@ -132,14 +132,24 @@ func renderGraph(ctx context.Context, result *queries.GraphResult, outputPath st
 		gvNodes[name] = node
 	}
 
-	// Create edges
+	// Build a set of dependency pairs for mutual-dependency detection.
+	// When A→B and B→A both exist, draw a single bidirectional edge.
+	type edgePair struct{ from, to string }
+	created := make(map[edgePair]bool)
 	edgeIndex := 0
+
 	for _, name := range names {
 		graphNode := result.Nodes[name]
 		for _, dep := range graphNode.Dependencies {
 			if _, ok := gvNodes[dep]; !ok {
 				continue
 			}
+
+			// Skip if already handled as the reverse of a bidirectional edge
+			if created[edgePair{dep, name}] {
+				continue
+			}
+
 			edgeName := fmt.Sprintf("e%d", edgeIndex)
 			edgeIndex++
 			edge, err := graph.CreateEdgeByName(edgeName, gvNodes[name], gvNodes[dep])
@@ -148,6 +158,18 @@ func renderGraph(ctx context.Context, result *queries.GraphResult, outputPath st
 			}
 			edge.SetColor("#718096")
 			edge.SetPenWidth(1.2)
+
+			// Check if the reverse dependency also exists
+			if depNode, ok := result.Nodes[dep]; ok {
+				for _, revDep := range depNode.Dependencies {
+					if revDep == name {
+						edge.SetDir(graphviz.BothDir)
+						break
+					}
+				}
+			}
+
+			created[edgePair{name, dep}] = true
 		}
 	}
 
@@ -181,6 +203,9 @@ func printDot(result *queries.GraphResult) {
 
 	names := sortedNodeNames(result)
 
+	type edgePair struct{ from, to string }
+	created := make(map[edgePair]bool)
+
 	for _, name := range names {
 		node := result.Nodes[name]
 
@@ -191,7 +216,27 @@ func printDot(result *queries.GraphResult) {
 		}
 
 		for _, dep := range node.Dependencies {
-			fmt.Printf("  %q -> %q;\n", name, dep)
+			if created[edgePair{dep, name}] {
+				continue
+			}
+
+			// Check if reverse dependency also exists
+			isMutual := false
+			if depNode, ok := result.Nodes[dep]; ok {
+				for _, revDep := range depNode.Dependencies {
+					if revDep == name {
+						isMutual = true
+						break
+					}
+				}
+			}
+
+			if isMutual {
+				fmt.Printf("  %q -> %q [dir=both];\n", name, dep)
+			} else {
+				fmt.Printf("  %q -> %q;\n", name, dep)
+			}
+			created[edgePair{name, dep}] = true
 		}
 
 		// Isolated nodes still need to appear
