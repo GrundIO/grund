@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"regexp"
+	"syscall"
 	"time"
 )
 
@@ -29,49 +31,85 @@ func (p *CloudflaredProvider) Name() string {
 
 // Start creates a tunnel using cloudflared
 func (p *CloudflaredProvider) Start(ctx context.Context, name string, localAddr string) (*Tunnel, error) {
-	// Check if cloudflared is installed
 	if _, err := exec.LookPath("cloudflared"); err != nil {
 		return nil, fmt.Errorf("cloudflared not found in PATH: install with 'brew install cloudflared': %w", err)
 	}
 
-	// Start cloudflared tunnel
-	cmd := exec.CommandContext(ctx, "cloudflared", "tunnel", "--url", fmt.Sprintf("http://%s", localAddr))
-
-	stderr, err := cmd.StderrPipe()
+	// Write stderr to a temp file instead of a pipe.
+	// Pipes cause SIGPIPE when the parent exits (read end closes),
+	// killing the detached child. A file has no such coupling.
+	logFile, err := os.CreateTemp("", "cloudflared-*.log")
 	if err != nil {
-		return nil, fmt.Errorf("failed to get stderr pipe: %w", err)
+		return nil, fmt.Errorf("failed to create temp log file: %w", err)
 	}
+	logPath := logFile.Name()
+
+	cmd := exec.Command("cloudflared", "tunnel", "--url", fmt.Sprintf("http://%s", localAddr))
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	cmd.Stderr = logFile
+	cmd.Stdout = nil
+	cmd.Stdin = nil
 
 	if err := cmd.Start(); err != nil {
+		logFile.Close()
+		os.Remove(logPath)
 		return nil, fmt.Errorf("failed to start cloudflared: %w", err)
 	}
 
-	// Wait for URL with timeout
+	// Close the write handle — the child has its own fd now.
+	// This fully severs the parent from the child's I/O.
+	logFile.Close()
+
+	// Poll the log file for the URL
 	urlChan := make(chan string, 1)
+	errChan := make(chan error, 1)
 	go func() {
-		scanner := bufio.NewScanner(stderr)
-		for scanner.Scan() {
-			line := scanner.Text()
-			if matches := cloudflaredURLPattern.FindStringSubmatch(line); len(matches) > 1 {
-				urlChan <- matches[1]
-				return
+		// Open our own read handle
+		f, err := os.Open(logPath)
+		if err != nil {
+			errChan <- fmt.Errorf("failed to open log file for reading: %w", err)
+			return
+		}
+		defer f.Close()
+
+		scanner := bufio.NewScanner(f)
+		for {
+			if scanner.Scan() {
+				line := scanner.Text()
+				if matches := cloudflaredURLPattern.FindStringSubmatch(line); len(matches) > 1 {
+					urlChan <- matches[1]
+					return
+				}
+			} else {
+				// No more data yet — wait and retry (file is still being written)
+				time.Sleep(100 * time.Millisecond)
+				// Reset scanner to pick up new content
+				scanner = bufio.NewScanner(f)
 			}
 		}
 	}()
 
 	select {
 	case url := <-urlChan:
+		// Clean up the temp log file — child keeps running independently
+		os.Remove(logPath)
 		return &Tunnel{
 			Name:      name,
 			PublicURL: url,
 			LocalAddr: localAddr,
 			Process:   cmd.Process,
 		}, nil
+	case err := <-errChan:
+		_ = cmd.Process.Kill()
+		os.Remove(logPath)
+		return nil, err
 	case <-time.After(30 * time.Second):
 		_ = cmd.Process.Kill()
+		os.Remove(logPath)
 		return nil, fmt.Errorf("timeout waiting for cloudflared URL after 30 seconds")
 	case <-ctx.Done():
 		_ = cmd.Process.Kill()
+		os.Remove(logPath)
 		return nil, fmt.Errorf("context cancelled while waiting for cloudflared URL: %w", ctx.Err())
 	}
 }

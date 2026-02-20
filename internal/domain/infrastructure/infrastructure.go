@@ -101,6 +101,7 @@ type S3Config struct {
 type BucketConfig struct {
 	Name string
 	Seed string
+	CORS bool
 }
 
 // TunnelRequirement represents tunnel infrastructure needs

@@ -14,10 +14,11 @@ type DownCommand struct{}
 
 // DownCommandHandler handles the down command
 type DownCommandHandler struct {
-	serviceRepo  ports.ServiceRepository
-	registryRepo ports.ServiceRegistryRepository
-	orchestrator ports.ContainerOrchestrator
-	hookExecutor ports.HookExecutor
+	serviceRepo   ports.ServiceRepository
+	registryRepo  ports.ServiceRegistryRepository
+	orchestrator  ports.ContainerOrchestrator
+	hookExecutor  ports.HookExecutor
+	tunnelManager ports.TunnelManager
 }
 
 // NewDownCommandHandler creates a new down command handler
@@ -26,12 +27,14 @@ func NewDownCommandHandler(
 	registryRepo ports.ServiceRegistryRepository,
 	orchestrator ports.ContainerOrchestrator,
 	hookExecutor ports.HookExecutor,
+	tunnelManager ports.TunnelManager,
 ) *DownCommandHandler {
 	return &DownCommandHandler{
-		serviceRepo:  serviceRepo,
-		registryRepo: registryRepo,
-		orchestrator: orchestrator,
-		hookExecutor: hookExecutor,
+		serviceRepo:   serviceRepo,
+		registryRepo:  registryRepo,
+		orchestrator:  orchestrator,
+		hookExecutor:  hookExecutor,
+		tunnelManager: tunnelManager,
 	}
 }
 
@@ -71,6 +74,11 @@ func (h *DownCommandHandler) Handle(ctx context.Context, cmd DownCommand) error 
 	// Stop containers
 	if err := h.orchestrator.StopServices(ctx); err != nil {
 		return err
+	}
+
+	// Stop tunnels (kills processes, removes PID files)
+	if err := h.tunnelManager.StopAll(); err != nil {
+		ui.Warnf("Failed to stop tunnels: %v", err)
 	}
 
 	// Run post_down hooks

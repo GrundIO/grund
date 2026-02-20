@@ -18,6 +18,15 @@ type Tunnel struct {
 	Process   *os.Process // the tunnel process
 }
 
+// TunnelState represents persisted tunnel state for PID file serialization
+type TunnelState struct {
+	PID       int    `json:"pid"`
+	Name      string `json:"name"`
+	PublicURL string `json:"public_url"`
+	LocalAddr string `json:"local_addr"`
+	Provider  string `json:"provider"`
+}
+
 // Provider defines the interface for tunnel providers
 type Provider interface {
 	// Start creates a tunnel to the given local address

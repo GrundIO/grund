@@ -113,6 +113,7 @@ type S3Config struct {
 type BucketConfig struct {
 	Name string `yaml:"name"`
 	Seed string `yaml:"seed,omitempty"`
+	CORS bool   `yaml:"cors,omitempty"`
 }
 
 type TunnelConfig struct {

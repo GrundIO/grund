@@ -12,6 +12,7 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
@@ -226,6 +227,26 @@ func (p *LocalStackProvisioner) ProvisionLocalStack(ctx context.Context, req inf
 					return nil, fmt.Errorf("failed to create bucket %s: %w", bucket.Name, err)
 				}
 				ui.Successf("Created S3 bucket: %s", bucket.Name)
+			}
+
+			if bucket.CORS {
+				ui.SubStep("Configuring CORS for bucket: %s", bucket.Name)
+				_, err := s3Client.PutBucketCors(ctx, &s3.PutBucketCorsInput{
+					Bucket: aws.String(bucket.Name),
+					CORSConfiguration: &s3types.CORSConfiguration{
+						CORSRules: []s3types.CORSRule{
+							{
+								AllowedOrigins: []string{"*"},
+								AllowedMethods: []string{"GET", "PUT", "POST", "DELETE", "HEAD"},
+								AllowedHeaders: []string{"*"},
+							},
+						},
+					},
+				})
+				if err != nil {
+					return nil, fmt.Errorf("failed to configure CORS for bucket %s: %w", bucket.Name, err)
+				}
+				ui.Successf("Configured CORS for bucket: %s", bucket.Name)
 			}
 
 			// Store provisioned bucket details (use path-style URL for LocalStack)

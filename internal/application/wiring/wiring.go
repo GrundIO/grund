@@ -136,6 +136,7 @@ func NewContainerWithConfig(orchestrationRoot, servicesPath string, configResolv
 		registryRepo,
 		orchestrator,
 		hookExecutor,
+		tunnelManager,
 	)
 	restartHandler := commands.NewRestartCommandHandler(orchestrator)
 

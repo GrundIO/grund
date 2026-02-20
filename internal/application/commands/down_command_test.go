@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Saturn-Fintech/grund/internal/application/ports"
+	"github.com/Saturn-Fintech/grund/internal/config"
 	"github.com/Saturn-Fintech/grund/internal/domain/infrastructure"
 	"github.com/Saturn-Fintech/grund/internal/domain/service"
 )
@@ -86,9 +87,30 @@ func (m *mockDownHookExecutor) ExecuteAll(ctx context.Context, hooks []service.H
 	return nil
 }
 
+type mockDownTunnelManager struct {
+	stopCalls int
+}
+
+func (m *mockDownTunnelManager) ValidateConfig(cfg *config.TunnelConfig) error {
+	return nil
+}
+
+func (m *mockDownTunnelManager) StartAll(ctx context.Context, cfg *config.TunnelConfig, targets []ports.ResolvedTunnelTarget) ([]ports.TunnelInfo, error) {
+	return nil, nil
+}
+
+func (m *mockDownTunnelManager) StopAll() error {
+	m.stopCalls++
+	return nil
+}
+
+func (m *mockDownTunnelManager) GetTunnels() map[string]ports.TunnelInfo {
+	return nil
+}
+
 func TestDownCommandHandler_Handle_Success(t *testing.T) {
 	orchestrator := &mockDownOrchestrator{}
-	handler := NewDownCommandHandler(&mockDownServiceRepo{}, &mockDownRegistryRepo{}, orchestrator, &mockDownHookExecutor{})
+	handler := NewDownCommandHandler(&mockDownServiceRepo{}, &mockDownRegistryRepo{}, orchestrator, &mockDownHookExecutor{}, &mockDownTunnelManager{})
 
 	cmd := DownCommand{}
 
@@ -106,7 +128,7 @@ func TestDownCommandHandler_Handle_OrchestratorFails(t *testing.T) {
 	orchestrator := &mockDownOrchestrator{
 		stopErr: fmt.Errorf("docker compose down failed"),
 	}
-	handler := NewDownCommandHandler(&mockDownServiceRepo{}, &mockDownRegistryRepo{}, orchestrator, &mockDownHookExecutor{})
+	handler := NewDownCommandHandler(&mockDownServiceRepo{}, &mockDownRegistryRepo{}, orchestrator, &mockDownHookExecutor{}, &mockDownTunnelManager{})
 
 	cmd := DownCommand{}
 
@@ -118,7 +140,7 @@ func TestDownCommandHandler_Handle_OrchestratorFails(t *testing.T) {
 
 func TestDownCommandHandler_Handle_MultipleCalls(t *testing.T) {
 	orchestrator := &mockDownOrchestrator{}
-	handler := NewDownCommandHandler(&mockDownServiceRepo{}, &mockDownRegistryRepo{}, orchestrator, &mockDownHookExecutor{})
+	handler := NewDownCommandHandler(&mockDownServiceRepo{}, &mockDownRegistryRepo{}, orchestrator, &mockDownHookExecutor{}, &mockDownTunnelManager{})
 
 	// Call Handle twice
 	_ = handler.Handle(context.Background(), DownCommand{})

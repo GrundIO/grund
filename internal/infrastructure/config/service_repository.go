@@ -204,6 +204,7 @@ type S3ConfigDTO struct {
 type BucketConfigDTO struct {
 	Name string `yaml:"name"`
 	Seed string `yaml:"seed,omitempty"`
+	CORS bool   `yaml:"cors,omitempty"`
 }
 
 // HooksDTO is the DTO for hooks YAML serialization
@@ -368,6 +369,7 @@ func (r *ServiceRepositoryImpl) toInfrastructureRequirements(dto InfrastructureC
 			buckets = append(buckets, infrastructure.BucketConfig{
 				Name: b.Name,
 				Seed: b.Seed,
+				CORS: b.CORS,
 			})
 		}
 		req.S3 = &infrastructure.S3Config{Buckets: buckets}
