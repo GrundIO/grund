@@ -6,9 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Saturn-Fintech/grund/internal/application/ports"
-	"github.com/Saturn-Fintech/grund/internal/domain/service"
-	"github.com/Saturn-Fintech/grund/internal/ui"
+	"github.com/GrundIO/grund/internal/application/ports"
+	"github.com/GrundIO/grund/internal/domain/service"
+	"github.com/GrundIO/grund/internal/ui"
 )
 
 // SyncCommand represents the command to sync service repositories

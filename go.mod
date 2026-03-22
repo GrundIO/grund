@@ -1,4 +1,4 @@
-module github.com/Saturn-Fintech/grund
+module github.com/GrundIO/grund
 
 go 1.23.0
 

@@ -3,8 +3,8 @@ package ports
 import (
 	"context"
 
-	"github.com/Saturn-Fintech/grund/internal/domain/infrastructure"
-	"github.com/Saturn-Fintech/grund/internal/domain/service"
+	"github.com/GrundIO/grund/internal/domain/infrastructure"
+	"github.com/GrundIO/grund/internal/domain/service"
 )
 
 // ContainerOrchestrator defines the interface for container orchestration

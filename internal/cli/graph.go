@@ -8,9 +8,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Saturn-Fintech/grund/internal/application/queries"
-	"github.com/Saturn-Fintech/grund/internal/cli/shared"
-	"github.com/Saturn-Fintech/grund/internal/ui"
+	"github.com/GrundIO/grund/internal/application/queries"
+	"github.com/GrundIO/grund/internal/cli/shared"
+	"github.com/GrundIO/grund/internal/ui"
 	"github.com/goccy/go-graphviz"
 	"github.com/spf13/cobra"
 )

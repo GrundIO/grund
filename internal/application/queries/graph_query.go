@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/Saturn-Fintech/grund/internal/application/ports"
-	"github.com/Saturn-Fintech/grund/internal/domain/dependency"
-	"github.com/Saturn-Fintech/grund/internal/domain/service"
-	"github.com/Saturn-Fintech/grund/internal/ui"
+	"github.com/GrundIO/grund/internal/application/ports"
+	"github.com/GrundIO/grund/internal/domain/dependency"
+	"github.com/GrundIO/grund/internal/domain/service"
+	"github.com/GrundIO/grund/internal/ui"
 )
 
 // GraphQuery represents a query for the service dependency graph

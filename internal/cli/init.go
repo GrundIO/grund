@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Saturn-Fintech/grund/internal/cli/prompts"
-	"github.com/Saturn-Fintech/grund/internal/cli/skills"
-	"github.com/Saturn-Fintech/grund/internal/config"
-	"github.com/Saturn-Fintech/grund/internal/ui"
+	"github.com/GrundIO/grund/internal/cli/prompts"
+	"github.com/GrundIO/grund/internal/cli/skills"
+	"github.com/GrundIO/grund/internal/config"
+	"github.com/GrundIO/grund/internal/ui"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )

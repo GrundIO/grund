@@ -9,8 +9,8 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/Saturn-Fintech/grund/internal/application/ports"
-	"github.com/Saturn-Fintech/grund/internal/config"
+	"github.com/GrundIO/grund/internal/application/ports"
+	"github.com/GrundIO/grund/internal/config"
 )
 
 // Manager handles tunnel lifecycle

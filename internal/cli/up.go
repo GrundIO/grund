@@ -3,10 +3,10 @@ package cli
 import (
 	"fmt"
 
-	"github.com/Saturn-Fintech/grund/internal/application/commands"
-	"github.com/Saturn-Fintech/grund/internal/cli/shared"
-	"github.com/Saturn-Fintech/grund/internal/infrastructure/generator"
-	"github.com/Saturn-Fintech/grund/internal/ui"
+	"github.com/GrundIO/grund/internal/application/commands"
+	"github.com/GrundIO/grund/internal/cli/shared"
+	"github.com/GrundIO/grund/internal/infrastructure/generator"
+	"github.com/GrundIO/grund/internal/ui"
 	"github.com/spf13/cobra"
 )
 

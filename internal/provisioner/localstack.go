@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Saturn-Fintech/grund/internal/config"
+	"github.com/GrundIO/grund/internal/config"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"

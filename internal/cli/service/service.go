@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/Saturn-Fintech/grund/internal/cli/service/add"
+	"github.com/GrundIO/grund/internal/cli/service/add"
 	"github.com/spf13/cobra"
 )
 

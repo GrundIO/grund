@@ -6,11 +6,11 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Saturn-Fintech/grund/internal/application/ports"
-	"github.com/Saturn-Fintech/grund/internal/application/queries"
-	"github.com/Saturn-Fintech/grund/internal/cli/shared"
-	"github.com/Saturn-Fintech/grund/internal/config"
-	"github.com/Saturn-Fintech/grund/internal/domain/service"
+	"github.com/GrundIO/grund/internal/application/ports"
+	"github.com/GrundIO/grund/internal/application/queries"
+	"github.com/GrundIO/grund/internal/cli/shared"
+	"github.com/GrundIO/grund/internal/config"
+	"github.com/GrundIO/grund/internal/domain/service"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
 )

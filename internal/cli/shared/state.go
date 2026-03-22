@@ -1,8 +1,8 @@
 package shared
 
 import (
-	"github.com/Saturn-Fintech/grund/internal/application/wiring"
-	"github.com/Saturn-Fintech/grund/internal/config"
+	"github.com/GrundIO/grund/internal/application/wiring"
+	"github.com/GrundIO/grund/internal/config"
 )
 
 var (

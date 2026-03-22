@@ -5,8 +5,8 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/Saturn-Fintech/grund/internal/infrastructure/docker"
-	"github.com/Saturn-Fintech/grund/internal/ui"
+	"github.com/GrundIO/grund/internal/infrastructure/docker"
+	"github.com/GrundIO/grund/internal/ui"
 	"github.com/spf13/cobra"
 )
 

@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"strconv"
 
-	"github.com/Saturn-Fintech/grund/internal/infrastructure/docker"
+	"github.com/GrundIO/grund/internal/infrastructure/docker"
 	"github.com/spf13/cobra"
 )
 

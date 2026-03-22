@@ -3,12 +3,12 @@ package cli
 import (
 	"fmt"
 
-	"github.com/Saturn-Fintech/grund/internal/application/wiring"
-	"github.com/Saturn-Fintech/grund/internal/cli/configcmd"
-	"github.com/Saturn-Fintech/grund/internal/cli/service"
-	"github.com/Saturn-Fintech/grund/internal/cli/shared"
-	"github.com/Saturn-Fintech/grund/internal/config"
-	"github.com/Saturn-Fintech/grund/internal/ui"
+	"github.com/GrundIO/grund/internal/application/wiring"
+	"github.com/GrundIO/grund/internal/cli/configcmd"
+	"github.com/GrundIO/grund/internal/cli/service"
+	"github.com/GrundIO/grund/internal/cli/shared"
+	"github.com/GrundIO/grund/internal/config"
+	"github.com/GrundIO/grund/internal/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +39,7 @@ Configuration:
   grund config init           Set up global config
   grund config show           View configuration
 
-Documentation: https://github.com/Saturn-Fintech/grund`,
+Documentation: https://github.com/GrundIO/grund`,
 	Version: "0.6.1",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		// Set verbose mode on logger
