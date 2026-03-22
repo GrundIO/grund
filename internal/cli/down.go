@@ -1,12 +1,12 @@
 package cli
 
 import (
-	"github.com/Saturn-Fintech/grund/internal/application/commands"
-	"github.com/Saturn-Fintech/grund/internal/application/wiring"
-	"github.com/Saturn-Fintech/grund/internal/cli/shared"
-	"github.com/Saturn-Fintech/grund/internal/config"
-	"github.com/Saturn-Fintech/grund/internal/infrastructure/docker"
-	"github.com/Saturn-Fintech/grund/internal/ui"
+	"github.com/GrundIO/grund/internal/application/commands"
+	"github.com/GrundIO/grund/internal/application/wiring"
+	"github.com/GrundIO/grund/internal/cli/shared"
+	"github.com/GrundIO/grund/internal/config"
+	"github.com/GrundIO/grund/internal/infrastructure/docker"
+	"github.com/GrundIO/grund/internal/ui"
 	"github.com/spf13/cobra"
 )
 

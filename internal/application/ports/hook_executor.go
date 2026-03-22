@@ -4,7 +4,7 @@ package ports
 import (
 	"context"
 
-	"github.com/Saturn-Fintech/grund/internal/domain/service"
+	"github.com/GrundIO/grund/internal/domain/service"
 )
 
 // HookExecutionContext provides context for hook execution

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Saturn-Fintech/grund/internal/domain/infrastructure"
+	"github.com/GrundIO/grund/internal/domain/infrastructure"
 )
 
 // Service represents a service in the domain

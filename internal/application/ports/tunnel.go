@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/Saturn-Fintech/grund/internal/config"
+	"github.com/GrundIO/grund/internal/config"
 )
 
 // TunnelInfo represents a running tunnel

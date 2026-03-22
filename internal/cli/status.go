@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Saturn-Fintech/grund/internal/application/queries"
-	"github.com/Saturn-Fintech/grund/internal/cli/shared"
-	"github.com/Saturn-Fintech/grund/internal/ui"
+	"github.com/GrundIO/grund/internal/application/queries"
+	"github.com/GrundIO/grund/internal/cli/shared"
+	"github.com/GrundIO/grund/internal/ui"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/spf13/cobra"

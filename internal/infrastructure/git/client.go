@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/Saturn-Fintech/grund/internal/application/ports"
+	"github.com/GrundIO/grund/internal/application/ports"
 )
 
 // Client implements ports.GitClient using os/exec

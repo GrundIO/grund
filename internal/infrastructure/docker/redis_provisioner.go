@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Saturn-Fintech/grund/internal/application/ports"
-	"github.com/Saturn-Fintech/grund/internal/domain/infrastructure"
+	"github.com/GrundIO/grund/internal/application/ports"
+	"github.com/GrundIO/grund/internal/domain/infrastructure"
 )
 
 // RedisProvisioner implements infrastructure provisioning for Redis

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Saturn-Fintech/grund/internal/application/ports"
-	"github.com/Saturn-Fintech/grund/internal/config"
-	"github.com/Saturn-Fintech/grund/internal/domain/infrastructure"
-	"github.com/Saturn-Fintech/grund/internal/domain/service"
-	"github.com/Saturn-Fintech/grund/internal/ui"
+	"github.com/GrundIO/grund/internal/application/ports"
+	"github.com/GrundIO/grund/internal/config"
+	"github.com/GrundIO/grund/internal/domain/infrastructure"
+	"github.com/GrundIO/grund/internal/domain/service"
+	"github.com/GrundIO/grund/internal/ui"
 )
 
 // UpCommand represents the command to start services

@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Saturn-Fintech/grund/internal/domain/infrastructure"
-	"github.com/Saturn-Fintech/grund/internal/domain/service"
+	"github.com/GrundIO/grund/internal/domain/infrastructure"
+	"github.com/GrundIO/grund/internal/domain/service"
 )
 
 // Helper function to create a test service

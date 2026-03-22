@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Saturn-Fintech/grund/internal/application/ports"
-	"github.com/Saturn-Fintech/grund/internal/domain/infrastructure"
-	"github.com/Saturn-Fintech/grund/internal/domain/service"
+	"github.com/GrundIO/grund/internal/application/ports"
+	"github.com/GrundIO/grund/internal/domain/infrastructure"
+	"github.com/GrundIO/grund/internal/domain/service"
 	"gopkg.in/yaml.v3"
 )
 

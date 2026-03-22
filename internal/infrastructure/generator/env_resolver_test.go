@@ -3,7 +3,7 @@ package generator
 import (
 	"testing"
 
-	"github.com/Saturn-Fintech/grund/internal/application/ports"
+	"github.com/GrundIO/grund/internal/application/ports"
 )
 
 func TestEnvironmentResolver_ResolvePostgres(t *testing.T) {

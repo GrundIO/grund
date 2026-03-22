@@ -212,8 +212,8 @@ import (
     "context"
     "fmt"
 
-    "github.com/Saturn-Fintech/grund/internal/application/ports"
-    "github.com/Saturn-Fintech/grund/internal/domain/infrastructure"
+    "github.com/GrundIO/grund/internal/application/ports"
+    "github.com/GrundIO/grund/internal/domain/infrastructure"
 )
 
 // ScyllaDBProvisioner implements infrastructure provisioning for ScyllaDB
@@ -771,8 +771,8 @@ import (
     "os/exec"
     "regexp"
 
-    "github.com/Saturn-Fintech/grund/internal/application/ports"
-    "github.com/Saturn-Fintech/grund/internal/domain/infrastructure"
+    "github.com/GrundIO/grund/internal/application/ports"
+    "github.com/GrundIO/grund/internal/domain/infrastructure"
 )
 
 type NgrokTunnelManager struct {
@@ -827,7 +827,7 @@ package tunnel
 import (
     "fmt"
 
-    "github.com/Saturn-Fintech/grund/internal/application/ports"
+    "github.com/GrundIO/grund/internal/application/ports"
 )
 
 func NewTunnelManager(provider string) (ports.TunnelManager, error) {

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Saturn-Fintech/grund/internal/application/ports"
-	"github.com/Saturn-Fintech/grund/internal/domain/infrastructure"
+	"github.com/GrundIO/grund/internal/application/ports"
+	"github.com/GrundIO/grund/internal/domain/infrastructure"
 )
 
 // ErrNotSupported indicates a provisioner doesn't support a specific infrastructure type

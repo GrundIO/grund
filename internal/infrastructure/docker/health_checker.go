@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Saturn-Fintech/grund/internal/application/ports"
+	"github.com/GrundIO/grund/internal/application/ports"
 )
 
 // HTTPHealthChecker implements HealthChecker using HTTP

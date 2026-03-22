@@ -4,8 +4,8 @@
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
-[![Go Report Card](https://img.shields.io/badge/Go%20Report-A-success?style=for-the-badge&logo=go)](https://goreportcard.com/report/github.com/Saturn-Fintech/grund)
-[![GitHub Release](https://img.shields.io/github/v/release/Saturn-Fintech/grund?style=for-the-badge&logo=github)](https://github.com/Saturn-Fintech/grund/releases)
+[![Go Report Card](https://img.shields.io/badge/Go%20Report-A-success?style=for-the-badge&logo=go)](https://goreportcard.com/report/github.com/GrundIO/grund)
+[![GitHub Release](https://img.shields.io/github/v/release/GrundIO/grund?style=for-the-badge&logo=github)](https://github.com/GrundIO/grund/releases)
 
 **Grund** is a CLI tool for local microservice development. One command spins up any service with all its dependencies—other services, databases, queues, and caches—in the correct order.
 
@@ -50,13 +50,13 @@ Grund automatically:
 ### Using Go Install
 
 ```bash
-go install github.com/Saturn-Fintech/grund@latest
+go install github.com/GrundIO/grund@latest
 ```
 
 ### From Source
 
 ```bash
-git clone https://github.com/Saturn-Fintech/grund.git
+git clone https://github.com/GrundIO/grund.git
 cd grund
 make install
 ```

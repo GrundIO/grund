@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Saturn-Fintech/grund/internal/config"
-	"github.com/Saturn-Fintech/grund/internal/resolver"
+	"github.com/GrundIO/grund/internal/config"
+	"github.com/GrundIO/grund/internal/resolver"
 )
 
 // GenerateCompose generates a docker-compose.yaml file from the resolved services

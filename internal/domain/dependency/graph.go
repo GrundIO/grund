@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Saturn-Fintech/grund/internal/domain/service"
+	"github.com/GrundIO/grund/internal/domain/service"
 )
 
 // Graph represents the dependency graph of services

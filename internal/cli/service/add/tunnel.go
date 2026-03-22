@@ -3,7 +3,7 @@ package add
 import (
 	"fmt"
 
-	"github.com/Saturn-Fintech/grund/internal/ui"
+	"github.com/GrundIO/grund/internal/ui"
 	"github.com/spf13/cobra"
 )
 
