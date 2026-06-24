@@ -1,0 +1,82 @@
+version: 2
+
+project_name: grund
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+      - "386"
+    ignore:
+      - goos: darwin
+        goarch: "386"
+      - goos: windows
+        goarch: "386"
+    ldflags:
+      - -s -w -X github.com/GrundIO/grund/internal/cli.Version={{.Version}}
+    main: .
+
+archives:
+  - id: default
+    formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^chore:"
+      - "^docs:"
+      - "^test:"
+
+nfpms:
+  - id: packages
+    package_name: grund
+    homepage: https://github.com/GrundIO/grund
+    description: Local development orchestration tool for microservices
+    maintainer: Vivek Kundariya <vivekkundariya.temp@gmail.com>
+    license: MIT
+    formats:
+      - deb
+      - rpm
+    bindir: /usr/bin
+
+homebrew_casks:
+  - name: grund
+    binaries:
+      - grund
+    repository:
+      owner: GrundIO
+      name: homebrew-grund
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    homepage: https://github.com/GrundIO/grund
+    description: Local development orchestration tool for microservices
+
+scoops:
+  - name: grund
+    repository:
+      owner: GrundIO
+      name: scoop-grund
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    homepage: https://github.com/GrundIO/grund
+    description: Local development orchestration tool for microservices
+    license: MIT
