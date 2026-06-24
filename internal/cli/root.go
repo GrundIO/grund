@@ -16,6 +16,8 @@ var (
 	// CLI flags
 	configFile string
 	verbose    bool
+
+	Version = "dev"
 )
 
 var rootCmd = &cobra.Command{
@@ -40,7 +42,7 @@ Configuration:
   grund config show           View configuration
 
 Documentation: https://github.com/GrundIO/grund`,
-	Version: "0.6.1",
+	Version: Version,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		// Set verbose mode on logger
 		ui.SetVerbose(verbose)

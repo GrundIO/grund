@@ -47,7 +47,35 @@ Grund automatically:
 
 ## Installation
 
-### Using Go Install
+### macOS (Homebrew)
+
+```bash
+brew tap GrundIO/grund
+brew install --cask grund
+```
+
+### Windows (Scoop)
+
+```bash
+scoop bucket add grundio https://github.com/GrundIO/scoop-grund
+scoop install grund
+```
+
+### Linux
+
+Download the latest `.deb` or `.rpm` from the [GitHub Releases page](https://github.com/GrundIO/grund/releases):
+
+```bash
+# Debian / Ubuntu
+dpkg -i grund_<version>_linux_amd64.deb
+
+# Fedora / RHEL
+rpm -i grund_<version>_linux_amd64.rpm
+```
+
+Or download the raw binary for your architecture directly from [GitHub Releases](https://github.com/GrundIO/grund/releases).
+
+### Using Go Install (for developers)
 
 ```bash
 go install github.com/GrundIO/grund@latest

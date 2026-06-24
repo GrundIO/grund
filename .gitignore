@@ -168,6 +168,9 @@ docker-compose.override.yaml
 # Plan files
 docs/plans/
 
+# Claude Code planning artifacts
+docs/superpowers/
+
 # Local development data
 .localdev/
 .grund/
