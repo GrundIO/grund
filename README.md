@@ -51,7 +51,7 @@ Grund automatically:
 
 ```bash
 brew tap GrundIO/grund
-brew install grund
+brew install --cask grund
 ```
 
 ### Windows (Scoop)
