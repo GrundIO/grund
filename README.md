@@ -51,6 +51,7 @@ Grund automatically:
 
 ```bash
 brew tap GrundIO/grund
+brew trust GrundIO/grund
 brew install --cask grund
 ```
 
