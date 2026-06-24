@@ -51,14 +51,8 @@ Grund automatically:
 
 ```bash
 brew tap GrundIO/grund
+brew trust GrundIO/grund
 brew install --cask grund
-```
-
-### Windows (Scoop)
-
-```bash
-scoop bucket add grundio https://github.com/GrundIO/scoop-grund
-scoop install grund
 ```
 
 ### Linux
