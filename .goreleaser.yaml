@@ -12,15 +12,12 @@ builds:
     goos:
       - linux
       - darwin
-      - windows
     goarch:
       - amd64
       - arm64
       - "386"
     ignore:
       - goos: darwin
-        goarch: "386"
-      - goos: windows
         goarch: "386"
     ldflags:
       - -s -w -X github.com/GrundIO/grund/internal/cli.Version={{.Version}}
@@ -30,9 +27,6 @@ archives:
   - id: default
     formats: [tar.gz]
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-    format_overrides:
-      - goos: windows
-        formats: [zip]
     files:
       - README.md
 
@@ -70,13 +64,3 @@ homebrew_casks:
       token: "{{ .Env.TAP_GITHUB_TOKEN }}"
     homepage: https://github.com/GrundIO/grund
     description: Local development orchestration tool for microservices
-
-scoops:
-  - name: grund
-    repository:
-      owner: GrundIO
-      name: scoop-grund
-      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
-    homepage: https://github.com/GrundIO/grund
-    description: Local development orchestration tool for microservices
-    license: MIT
